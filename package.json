@@ -1,0 +1,38 @@
+{
+  "name": "stalker-mod-manager-vue",
+  "private": true,
+  "version": "0.0.0",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev:build": "vite build --watch",
+    "dev:process": "electron .",
+    "make": "electron-forge make",
+    "start": "electron-forge start",
+    "package": "electron-forge package"
+  },
+  "dependencies": {
+    "@vueuse/electron": "^10.0.2",
+    "adm-zip": "^0.5.10",
+    "dotenv": "^16.0.3",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^8.1.0",
+    "node-fetch": "^3.3.1",
+    "pinia": "^2.0.35",
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.1.1",
+    "@electron-forge/maker-deb": "^6.1.1",
+    "@electron-forge/maker-rpm": "^6.1.1",
+    "@electron-forge/maker-squirrel": "^6.1.1",
+    "@electron-forge/maker-wix": "^6.1.0",
+    "@electron-forge/maker-zip": "^6.1.1",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "electron": "^24.1.2",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electron-wix-msi": "^5.0.0",
+    "nodemon": "^2.0.22",
+    "vite": "^4.2.0"
+  }
+}
