@@ -29,7 +29,7 @@ main {
 
 #content {
     width: 100%;
-    max-height: calc(100vh - var(--topbar-height));
+    max-height: calc(100vh - 2rem);
     overflow: auto;
     overflow-x: hidden;
 }

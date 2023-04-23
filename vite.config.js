@@ -7,4 +7,7 @@ export default defineConfig({
   base: '',
   publicDir: false,
   plugins: [vue()],
+  build: {
+    minify: false
+  }
 })

@@ -42,13 +42,8 @@ async function createWindow() {
     ipcMain.on('closeApp', () => {
         mainWindow.close()
     })
-    ipcMain.handle('getApiServer', async (event) => {
-        if (process.env.SERVER && process.env.PORT) {
-            return `${process.env.SERVER}:${process.env.PORT}`
-        }
-        return "localhost:3000"
-    })
-    ipcMain.handle('downloadAndInstallMod', async (event, modUrl, savePath, archive_type, isStandalone) => {
+    ipcMain.handle('downloadAndInstallMod', async (event, modData, savePath) => {
+        const { downloadURL, archive_type, standalone } = modData
         if (savePath == null) {
             try {
                 savePath = dialog.showOpenDialogSync(mainWindow, {
@@ -62,13 +57,13 @@ async function createWindow() {
         const resolvedPath = path.resolve(savePath);
         const { promisify } = require("util");
         const finished = promisify(require("stream").finished);
-        const splitURL = modUrl.split(".")
-        const archiveName = `installation.${archive_type || "zip"}`
+        const splitURL = downloadURL.split(".")
+        const archiveName = `installation_${modData.id}.${archive_type || "zip"}`
         const writer = fs.createWriteStream(`${resolvedPath}/${archiveName}`);
         try {
             // Import node-fetch using a dynamic import statement
             const fetch = (await import("node-fetch")).default;
-            const response = await fetch(modUrl);
+            const response = await fetch(downloadURL);
             const totalBytes = parseInt(response.headers.get("content-length"), 10);
             let downloadedBytes = 0;
 
@@ -76,7 +71,7 @@ async function createWindow() {
                 try {
                     downloadedBytes += chunk.length;
                     const percentage = (downloadedBytes / totalBytes) * 100;
-                    event.sender.send("download-progress", percentage, downloadedBytes);
+                    event.sender.send("download-progress", percentage, modData.id, downloadedBytes);
                     mainWindow.setProgressBar(percentage / 100)
                 } catch (error) {
                     console.error(error)
@@ -101,7 +96,7 @@ async function createWindow() {
                 (entry, zipEntry) => {
                     entriesExtracted++;
                     const progress = Math.round((entriesExtracted / totalEntries) * 100);
-                    event.sender.send("extract-progress", progress);
+                    event.sender.send("extract-progress", modData.id, progress);
                     mainWindow.setProgressBar(progress / 100);
                 },
                 (error) => {
@@ -117,8 +112,7 @@ async function createWindow() {
             fs.unlinkSync(`${resolvedPath}/${archiveName}`); // delete the zip file
             
             // Remember installation
-
-            if (modin)
+            
             
             return true;
         } catch (error) {

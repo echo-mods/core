@@ -1,6 +1,8 @@
 <script setup>
 import { defineProps } from "vue"
-import { ipcRenderer } from "../modules/ipcRenderer"
+import { useIpcRenderer } from '@vueuse/electron'
+var ipcRenderer = useIpcRenderer()
+
 const props = defineProps({
     "version": String,
     "build_label": String

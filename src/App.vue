@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar.vue'
 import ExploreView from './views/Explore.vue';
 import LibraryView from './views/Library.vue';
 import SettingsView from './views/Settings.vue';
+import DetailsView from './views/Details.vue';
 
 // Vue imports
 import { ref } from 'vue'
@@ -33,6 +34,7 @@ window.addEventListener("online", update);
     <div id="content">
       <Transition name="view" mode="out-in">
         <ExploreView v-if="sessionStore.currentSection === 'explore'" />
+        <DetailsView v-if="sessionStore.currentSection === 'details'" />
         <LibraryView v-if="sessionStore.currentSection === 'library'" />
         <SettingsView v-if="sessionStore.currentSection === 'settings'" />
       </Transition>
@@ -50,6 +52,5 @@ window.addEventListener("online", update);
 .view-leave-to {
   opacity: 0;
   transform: translateX(1rem);
-  filter: blur(1rem);
 }
 </style>
