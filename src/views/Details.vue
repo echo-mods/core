@@ -15,10 +15,11 @@ const downloadAndInstallMod = (path) => {
     if (!installations.value) { installations.value = [] }
     installations.value.push(modData)
     currentSection.value = "library"
+    if (success === "path") { sessionStore.installationPaths[currentMod.value.game_required] = undefined }
 }
 
 const installMod = async () => {
-    const gameID = currentMod.game_required
+    const gameID = currentMod.value.game_required
     var installationPath = installationPaths.value[gameID]
     if (currentMod) {
         if (!currentMod.standalone && installationPath == null) {

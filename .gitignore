@@ -13,7 +13,6 @@ dist-ssr
 *.local
 pure
 dist
-forge.config.js
 
 
 # Editor directories and files
@@ -28,3 +27,6 @@ forge.config.js
 *.sw?
 
 out/
+
+*.zip
+.env

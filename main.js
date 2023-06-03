@@ -1,15 +1,46 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 if (require('electron-squirrel-startup')) app.quit();
 try {
-    require('electron-reload')(__dirname+"/dist/assets");
+    require('electron-reload')(__dirname);
 } catch (error) { }
 require('dotenv').config()
 const path = require('path');
 const fs = require('fs');
 const AdmZip = require('adm-zip')
 
+// Discord RPC
+try {
+    const DiscordRPC = require('discord-rpc');
+    const clientId = process.env.RPC_CLIENT_ID;
+
+    DiscordRPC.register(clientId);
+
+    const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+
+    rpc.login({ clientId }).catch(console.error);
+    
+    /*rpc.setActivity({
+        details: 'Playing My Electron App',
+        state: 'In Main Menu',
+        largeImageKey: 'large_image_key_here',
+        largeImageText: 'My Electron App',
+        smallImageKey: 'small_image_key_here',
+        smallImageText: 'Some Text',
+        startTimestamp: new Date(),
+        instance: false,
+    });*/
+
+    rpc.on('ready', () => {
+        console.log('Discord Rich Presence is ready!');
+    });
+    app.on('window-all-closed', () => {
+        rpc.destroy();
+    })
+} catch (error) {
+    console.log(`Failed to start Discord Rich Presence: ${error}`)
+}
+
 const Store = require('electron-store');
-const { url } = require('inspector');
 Store.initRenderer();
 
 async function createWindow() {
@@ -55,31 +86,58 @@ async function createWindow() {
             }
         }
         const resolvedPath = path.resolve(savePath);
+        if (!fs.existsSync(savePath)) {
+            return "path"
+        }
         const { promisify } = require("util");
         const finished = promisify(require("stream").finished);
         const splitURL = downloadURL.split(".")
         const archiveName = `installation_${modData.id}.${archive_type || "zip"}`
         const writer = fs.createWriteStream(`${resolvedPath}/${archiveName}`);
         try {
-            // Import node-fetch using a dynamic import statement
+            let response;
+            let torrent;
+
+            if (downloadURL.startsWith("magnet:")) {
+            // Download using WebTorrent
+            const client = new WebTorrent();
+
+            torrent = client.add(downloadURL, { path: resolvedPath });
+
+            response = {
+                headers: { "content-length": torrent.length },
+                body: torrent,
+            };
+            } else {
+            // Download using fetch
             const fetch = (await import("node-fetch")).default;
-            const response = await fetch(downloadURL);
+
+            response = await fetch(downloadURL);
+            }
+
             const totalBytes = parseInt(response.headers.get("content-length"), 10);
             let downloadedBytes = 0;
 
+            const writer = fs.createWriteStream(`${resolvedPath}/${archiveName}`);
+
             response.body.on("data", (chunk) => {
-                try {
-                    downloadedBytes += chunk.length;
-                    const percentage = (downloadedBytes / totalBytes) * 100;
-                    event.sender.send("download-progress", percentage, modData.id, downloadedBytes);
-                    mainWindow.setProgressBar(percentage / 100)
-                } catch (error) {
-                    console.error(error)
-                }
+            try {
+                downloadedBytes += chunk.length;
+                const percentage = (downloadedBytes / totalBytes) * 100;
+                event.sender.send("download-progress", percentage, modData.id, downloadedBytes);
+                mainWindow.setProgressBar(percentage / 100);
+            } catch (error) {
+                console.error(error);
+            }
             });
 
             response.body.pipe(writer);
             await finished(writer);
+
+            if (torrent) {
+            // Remove the downloaded torrent files
+            torrent.destroy();
+            }
             // Remove progress bar
 
             const zip = new AdmZip(`${resolvedPath}/${archiveName}`);
@@ -103,7 +161,7 @@ async function createWindow() {
                     if (error) {
                         console.error(`Error extracting zip file: ${error}`);
                     } else {
-                        event.sender.send("extract-progress", 100);
+                        event.sender.send("extract-progress", modData.id, 100);
                     }
                 },
                 overwrittenFiles
@@ -112,7 +170,6 @@ async function createWindow() {
             fs.unlinkSync(`${resolvedPath}/${archiveName}`); // delete the zip file
             
             // Remember installation
-            
             
             return true;
         } catch (error) {
