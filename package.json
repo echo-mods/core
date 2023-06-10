@@ -22,10 +22,12 @@
     "dotenv": "^16.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.1.0",
+    "magnet-uri": "^7.0.5",
     "node-fetch": "^3.3.1",
     "pinia": "^2.0.35",
     "vue": "^3.2.47",
-    "webtorrent": "^2.0.37"
+    "webtorrent": "^2.0.37",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.1.1",
