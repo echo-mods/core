@@ -23,7 +23,7 @@ const closeApp = () => {
 
 <template>
     <header>
-        <span class="title">SMM | {{ version }} ({{ build_label }})</span>
+        <span class="title">EchoMod | {{ version }} ({{ build_label }})</span>
         <div class="buttons">
             <button @click="minimiseApp"><img src="../images/minimiseApp.webp" alt="_"></button>
             <button @click="toggleApp"><img src="../images/toggleApp.webp" alt="/"></button>

@@ -8,6 +8,6 @@ export default defineConfig({
   publicDir: false,
   plugins: [vue()],
   build: {
-    minify: false
+    minify: true
   }
 })
