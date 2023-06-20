@@ -1,14 +1,13 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 if (require("electron-squirrel-startup")) app.quit();
 try {
-    require("electron-reload")(__dirname);
+    //require("electron-reload")(__dirname);
 } catch (error) {}
 require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const AdmZip = require("adm-zip");
-const magnet = require("magnet-uri");
-const { BitTorrentDownloader } = require("./modules/BitTorrent");
+const BitTorrent = require("./modules/BitTorrent");
 
 // Discord RPC
 try {
@@ -95,72 +94,34 @@ async function createWindow() {
             if (!fs.existsSync(savePath)) {
                 return "path";
             }
-            const { promisify } = require("util");
-            const finished = promisify(require("stream").finished);
             const splitURL = downloadURL.split(".");
             const archiveName = `installation_${modData.id}.${
                 archive_type || "zip"
             }`;
-            const writer = fs.createWriteStream(
-                `${resolvedPath}/${archiveName}`
-            );
             try {
-                let response;
-                let torrent;
-
                 if (downloadURL.startsWith("magnet:")) {
-                    // Download using WebTorrent
-                    const parsedMagnet = magnet.decode(magnetLink);
-                    const infoHash = Buffer.from(parsedMagnet.infoHash, "hex");
+                    // Actual download process
+                    const downloader = new BitTorrent(downloadURL, `${savePath}/${archiveName}`);
 
-                    torrent = client.add(downloadURL, { path: resolvedPath });
+                    downloader.setProgressCallback((percentage) => {
+                        try {
+                            event.sender.send(
+                                "download-progress",
+                                percentage,
+                                modData.id,
+                                0
+                            );
+                            mainWindow.setProgressBar(percentage / 100);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    });
 
-                    response = {
-                        headers: { "content-length": torrent.length },
-                        body: torrent,
-                    };
+                    downloader.start();
                 } else {
-                    // Download using fetch
-                    const fetch = (await import("node-fetch")).default;
-
-                    response = await fetch(downloadURL);
+                    // ...
                 }
-
-                const totalBytes = parseInt(
-                    response.headers.get("content-length"),
-                    10
-                );
-                let downloadedBytes = 0;
-
-                const writer = fs.createWriteStream(
-                    `${resolvedPath}/${archiveName}`
-                );
-
-                response.body.on("data", (chunk) => {
-                    try {
-                        downloadedBytes += chunk.length;
-                        const percentage = (downloadedBytes / totalBytes) * 100;
-                        event.sender.send(
-                            "download-progress",
-                            percentage,
-                            modData.id,
-                            downloadedBytes
-                        );
-                        mainWindow.setProgressBar(percentage / 100);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                });
-
-                response.body.pipe(writer);
-                await finished(writer);
-
-                if (torrent) {
-                    // Remove the downloaded torrent files
-                    torrent.destroy();
-                }
-                // Remove progress bar
-
+                /*
                 const zip = new AdmZip(`${resolvedPath}/${archiveName}`);
                 const entries = zip.getEntries();
                 const totalEntries = entries.length;
@@ -201,7 +162,7 @@ async function createWindow() {
                 );
                 mainWindow.setProgressBar(-1);
                 fs.unlinkSync(`${resolvedPath}/${archiveName}`); // delete the zip file
-
+                */
                 // Remember installation
 
                 return true;

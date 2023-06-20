@@ -48,7 +48,7 @@ window.addEventListener("online", update);
   transition: all 0.2s ease-in-out;
 }
 
-.view-enter-from ,
+.view-enter-from,
 .view-leave-to {
   opacity: 0;
   transform: translateX(1rem);

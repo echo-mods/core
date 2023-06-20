@@ -8,7 +8,7 @@ const sessionStore = useSessionStore()
 const cards = ref()
 
 // Color interpolation system
-var _interpolateColor = function (color1, color2, factor) {
+const _interpolateColor = (color1, color2, factor) => {
     if (arguments.length < 3) { factor = 0.5; }
     var result = color1.slice();
     for (var i = 0; i < 3; i++) {
