@@ -44,7 +44,7 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
             <div v-for="mod in installations" :style="{ completed: mod.completed }">
                 <img :src="`${mod.imageURL}`">
                 <h2>{{ mod.name }}</h2>
-                <h3 v-if="!mod.completed" v-html="`${mod.progress || 'Неизвестная ошибка...'}`"></h3>
+                <h3 v-if="!mod.completed" v-html="`${mod.progress || '...'}`"></h3>
                 <h3 v-if="mod.completed" v-html="`<b>Установка завершена</b>`"></h3>
                 <div class="progress" :style="{ width: mod.progressWidth }"></div>
             </div>

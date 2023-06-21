@@ -27,7 +27,7 @@ window.addEventListener("online", update);
 </script>
 
 <template>
-  <Topbar version="0.1.0" build_label="dev build" />
+  <Topbar version="0.2.0" build_label="dev build" />
   <NoInternet v-if="!internet_present" />
   <main>
     <Sidebar />

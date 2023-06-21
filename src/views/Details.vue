@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import ContentSlideshow from '../components/ContentSlideshow.vue';
 import { askGamePath } from '../modules/mainProcessInteractions'
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../stores/SessionStore.js'
 import { useIpcRenderer } from '@vueuse/electron'
+
 var ipcRenderer = useIpcRenderer()
 
 const sessionStore = useSessionStore()
@@ -39,9 +41,7 @@ const installMod = async () => {
 <template>
     <div id="details">
         <div class="container">
-            <iframe class="ytembed"
-                :src="`https://youtube.com/embed/${currentMod.youtubeVideoID}?modestbranding=1`" frameborder="0"
-                allowfullscreen></iframe>
+            <ContentSlideshow :content="currentMod.content" />
             <div class="info">
                 <p class="description">{{ currentMod.description }}</p>
                 <div class="mini-info">
@@ -79,16 +79,6 @@ const installMod = async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.ytembed {
-    border-radius: 1rem;
-    box-shadow: 0 0 2rem rgba(255, 255, 255, 0.5);
-    width: 70%;
-    aspect-ratio: 16 / 9;
-    border: 1px white solid;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
 }
 
 #details .info {

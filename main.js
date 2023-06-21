@@ -7,7 +7,6 @@ require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const AdmZip = require("adm-zip");
-const BitTorrent = require("./modules/BitTorrent");
 
 // Discord RPC
 try {
@@ -98,31 +97,42 @@ async function createWindow() {
             const archiveName = `installation_${modData.id}.${
                 archive_type || "zip"
             }`;
+            const writer = fs.createWriteStream(
+                `${resolvedPath}/${archiveName}`
+            );
             try {
-                if (downloadURL.startsWith("magnet:")) {
-                    // Actual download process
-                    const downloader = new BitTorrent(downloadURL, `${savePath}/${archiveName}`);
+                // Import node-fetch using a dynamic import statement
+                const fetch = (await import("node-fetch")).default;
+                const response = await fetch(downloadURL);
+                const { promisify } = require("util")
+                const finished = promisify(require("stream").finished);
+                const totalBytes = parseInt(
+                    response.headers.get("content-length"),
+                    10
+                );
+                let downloadedBytes = 0;
+                response.body.on("data", (chunk) => {
+                    try {
+                        downloadedBytes += chunk.length;
+                        const percentage = (downloadedBytes / totalBytes) * 100;
+                        event.sender.send(
+                            "download-progress",
+                            percentage,
+                            modData.id,
+                            downloadedBytes
+                        );
+                        console.log(percentage / 100)
+                        mainWindow.setProgressBar(percentage / 100);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+                response.body.pipe(writer);
+                await finished(writer);
 
-                    downloader.setProgressCallback((percentage) => {
-                        try {
-                            event.sender.send(
-                                "download-progress",
-                                percentage,
-                                modData.id,
-                                0
-                            );
-                            mainWindow.setProgressBar(percentage / 100);
-                        } catch (error) {
-                            console.error(error);
-                        }
-                    });
+                // ! Finished download
 
-                    downloader.start();
-                } else {
-                    // ...
-                }
-                /*
-                const zip = new AdmZip(`${resolvedPath}/${archiveName}`);
+                const zip = new AdmZip(`${resolvedPath}\\${archiveName}`);
                 const entries = zip.getEntries();
                 const totalEntries = entries.length;
                 let entriesExtracted = 0;
@@ -162,7 +172,7 @@ async function createWindow() {
                 );
                 mainWindow.setProgressBar(-1);
                 fs.unlinkSync(`${resolvedPath}/${archiveName}`); // delete the zip file
-                */
+
                 // Remember installation
 
                 return true;
