@@ -7,6 +7,7 @@ require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const AdmZip = require("adm-zip");
+const unzipper = require("unzipper");
 
 // Discord RPC
 try {
@@ -104,25 +105,29 @@ async function createWindow() {
                 // Import node-fetch using a dynamic import statement
                 const fetch = (await import("node-fetch")).default;
                 const response = await fetch(downloadURL);
-                const { promisify } = require("util")
+                const { promisify } = require("util");
                 const finished = promisify(require("stream").finished);
                 const totalBytes = parseInt(
                     response.headers.get("content-length"),
                     10
                 );
                 let downloadedBytes = 0;
+                let chunkID = 0
                 response.body.on("data", (chunk) => {
                     try {
                         downloadedBytes += chunk.length;
                         const percentage = (downloadedBytes / totalBytes) * 100;
-                        event.sender.send(
-                            "download-progress",
-                            percentage,
-                            modData.id,
-                            downloadedBytes
-                        );
-                        console.log(percentage / 100)
-                        mainWindow.setProgressBar(percentage / 100);
+                        chunkID++
+                        if (chunkID % 150 === 0) {
+                            event.sender.send(
+                                "download-progress",
+                                percentage,
+                                modData.id,
+                                downloadedBytes
+                            );
+                            console.log(percentage / 100);
+                            mainWindow.setProgressBar(percentage / 100);
+                        }
                     } catch (error) {
                         console.error(error);
                     }
@@ -130,8 +135,62 @@ async function createWindow() {
                 response.body.pipe(writer);
                 await finished(writer);
 
-                // ! Finished download
+                // ! Finished download + starting unzipper aproach
+                const zipFilePath = `${resolvedPath}/${archiveName}`;
 
+                // Extraction progress variables
+                let entriesExtracted = 0;
+                let totalEntries = 0;
+
+                // Start extraction
+                const extractionStream = fs
+                    .createReadStream(zipFilePath)
+                    .pipe(unzipper.Parse());
+
+                extractionStream.on("entry", (entry) => {
+                    // Increment total entries count
+                    totalEntries++;
+
+                    // Listen for progress event when a file is extracted
+                    entry.on("end", () => {
+                        entriesExtracted++;
+
+                        // Calculate progress
+                        const progress = Math.round(
+                            (entriesExtracted / totalEntries) * 100
+                        );
+
+                        // Report progress to the renderer process
+                        event.sender.send(
+                            "extract-progress",
+                            modData.id,
+                            progress
+                        );
+                        mainWindow.setProgressBar(progress / 100);
+                    });
+
+                    // Extract the entry to the target path
+                    entry.pipe(
+                        fs.createWriteStream(
+                            path.join(resolvedPath, entry.path)
+                        )
+                    );
+                });
+
+                // Wait for the extraction process to finish
+                await new Promise((resolve, reject) => {
+                    extractionStream.on("finish", resolve);
+                    extractionStream.on("error", reject);
+                });
+
+                mainWindow.setProgressBar(-1);
+                fs.unlinkSync(zipFilePath); // delete the zip file
+
+                // Remember installation
+
+                return true;
+
+                /* !!!
                 const zip = new AdmZip(`${resolvedPath}\\${archiveName}`);
                 const entries = zip.getEntries();
                 const totalEntries = entries.length;
@@ -176,6 +235,7 @@ async function createWindow() {
                 // Remember installation
 
                 return true;
+                */
             } catch (error) {
                 console.log("Installation error -", error);
                 return error;
