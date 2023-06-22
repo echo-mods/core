@@ -6,8 +6,7 @@ try {
 require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
-const AdmZip = require("adm-zip");
-const unzipper = require("unzipper");
+const extract = require("extract-zip");
 
 // Discord RPC
 try {
@@ -112,13 +111,13 @@ async function createWindow() {
                     10
                 );
                 let downloadedBytes = 0;
-                let chunkID = 0
+                let lastUpdate = Date.now()
                 response.body.on("data", (chunk) => {
                     try {
                         downloadedBytes += chunk.length;
                         const percentage = (downloadedBytes / totalBytes) * 100;
-                        chunkID++
-                        if (chunkID % 150 === 0) {
+                        if (Date.now() - lastUpdate > 1000) {
+                            lastUpdate = Date.now()
                             event.sender.send(
                                 "download-progress",
                                 percentage,
@@ -143,44 +142,20 @@ async function createWindow() {
                 let totalEntries = 0;
 
                 // Start extraction
-                const extractionStream = fs
-                    .createReadStream(zipFilePath)
-                    .pipe(unzipper.Parse());
-
-                extractionStream.on("entry", (entry) => {
-                    // Increment total entries count
-                    totalEntries++;
-
-                    // Listen for progress event when a file is extracted
-                    entry.on("end", () => {
+                await extract(zipFilePath, {
+                    dir: resolvedPath,
+                    onEntry: () => {
                         entriesExtracted++;
-
-                        // Calculate progress
                         const progress = Math.round(
                             (entriesExtracted / totalEntries) * 100
                         );
-
-                        // Report progress to the renderer process
                         event.sender.send(
                             "extract-progress",
                             modData.id,
                             progress
                         );
                         mainWindow.setProgressBar(progress / 100);
-                    });
-
-                    // Extract the entry to the target path
-                    entry.pipe(
-                        fs.createWriteStream(
-                            path.join(resolvedPath, entry.path)
-                        )
-                    );
-                });
-
-                // Wait for the extraction process to finish
-                await new Promise((resolve, reject) => {
-                    extractionStream.on("finish", resolve);
-                    extractionStream.on("error", reject);
+                    },
                 });
 
                 mainWindow.setProgressBar(-1);
@@ -189,53 +164,6 @@ async function createWindow() {
                 // Remember installation
 
                 return true;
-
-                /* !!!
-                const zip = new AdmZip(`${resolvedPath}\\${archiveName}`);
-                const entries = zip.getEntries();
-                const totalEntries = entries.length;
-                let entriesExtracted = 0;
-                const overwrittenFiles = [];
-                // Extracton message for client
-                event.sender.send("extract-progress", 0);
-                mainWindow.setProgressBar(0);
-                zip.extractAllToAsync(
-                    resolvedPath,
-                    true,
-                    (entry, zipEntry) => {
-                        entriesExtracted++;
-                        const progress = Math.round(
-                            (entriesExtracted / totalEntries) * 100
-                        );
-                        event.sender.send(
-                            "extract-progress",
-                            modData.id,
-                            progress
-                        );
-                        mainWindow.setProgressBar(progress / 100);
-                    },
-                    (error) => {
-                        if (error) {
-                            console.error(
-                                `Error extracting zip file: ${error}`
-                            );
-                        } else {
-                            event.sender.send(
-                                "extract-progress",
-                                modData.id,
-                                100
-                            );
-                        }
-                    },
-                    overwrittenFiles
-                );
-                mainWindow.setProgressBar(-1);
-                fs.unlinkSync(`${resolvedPath}/${archiveName}`); // delete the zip file
-
-                // Remember installation
-
-                return true;
-                */
             } catch (error) {
                 console.log("Installation error -", error);
                 return error;

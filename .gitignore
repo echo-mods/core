@@ -30,3 +30,4 @@ out/
 
 *.zip
 .env
+*.7z
