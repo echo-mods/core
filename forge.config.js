@@ -5,7 +5,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: 'StalkerModManager',
+        name: 'Echo Mods',
         authors: 'Andrei Hudalla',
         noMsi: true,
         description: 'A mod manager made with ❤️ for the stalker community',

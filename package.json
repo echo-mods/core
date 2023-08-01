@@ -1,12 +1,12 @@
 {
-  "name": "stalker-mod-manager-vue",
+  "name": "core",
   "private": true,
   "version": "0.0.0",
   "main": "main.js",
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paranoidPhantom/stalker-mod-manager-vue.git"
+    "url": "https://github.com/echo-mods/core.git"
   },
   "scripts": {
     "dev:build": "vite build --watch",
@@ -44,7 +44,7 @@
     "electron-reload": "^2.0.0-alpha.1",
     "electron-wix-msi": "^5.0.0",
     "esm": "^3.2.25",
-    "nodemon": "^2.0.22",
+    "nodemon": "^3.0.1",
     "vite": "^4.2.0"
   }
 }
