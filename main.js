@@ -8,38 +8,6 @@ const path = require("path");
 const fs = require("fs");
 const extract = require("extract-zip");
 
-// Discord RPC
-try {
-    const DiscordRPC = require("discord-rpc");
-    const clientId = process.env.RPC_CLIENT_ID;
-
-    DiscordRPC.register(clientId);
-
-    const rpc = new DiscordRPC.Client({ transport: "ipc" });
-
-    rpc.login({ clientId }).catch(console.error);
-
-    /*rpc.setActivity({
-        details: 'Playing My Electron App',
-        state: 'In Main Menu',
-        largeImageKey: 'large_image_key_here',
-        largeImageText: 'My Electron App',
-        smallImageKey: 'small_image_key_here',
-        smallImageText: 'Some Text',
-        startTimestamp: new Date(),
-        instance: false,
-    });*/
-
-    rpc.on("ready", () => {
-        console.log("Discord Rich Presence is ready!");
-    });
-    app.on("window-all-closed", () => {
-        rpc.destroy();
-    });
-} catch (error) {
-    console.log(`Failed to start Discord Rich Presence: ${error}`);
-}
-
 const Store = require("electron-store");
 Store.initRenderer();
 

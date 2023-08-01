@@ -34,9 +34,9 @@ window.addEventListener("online", update);
     <div id="content">
       <Transition name="view" mode="out-in">
         <ExploreView v-if="sessionStore.currentSection === 'explore'" />
-        <DetailsView v-if="sessionStore.currentSection === 'details'" />
-        <LibraryView v-if="sessionStore.currentSection === 'library'" />
-        <SettingsView v-if="sessionStore.currentSection === 'settings'" />
+        <DetailsView v-else-if="sessionStore.currentSection === 'details'" />
+        <LibraryView v-else-if="sessionStore.currentSection === 'library'" />
+        <SettingsView v-else-if="sessionStore.currentSection === 'settings'" />
       </Transition>
     </div>
   </main>
