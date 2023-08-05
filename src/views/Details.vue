@@ -6,6 +6,9 @@ import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../stores/SessionStore.js'
 import { useIpcRenderer } from '@vueuse/electron'
 
+// Other imports
+import { Icon } from '@iconify/vue';
+
 var ipcRenderer = useIpcRenderer()
 
 const sessionStore = useSessionStore()
@@ -46,11 +49,11 @@ const installMod = async () => {
                 <p class="description">{{ currentMod.description }}</p>
                 <div class="mini-info">
                     <p class="rating">
-                        <i class="fa-solid fa-radiation"></i>
+                        <Icon icon="streamline:interface-favorite-like-1-reward-social-up-rating-media-like-thumb-hand"/>
                         {{ currentMod.rating }} / 10
                     </p>
                     <p class="platform">
-                        <i class="fa-solid fa-chart-line"></i>
+                        <Icon icon="eos-icons:installing"/>
                         {{ currentMod.platform }}
                     </p>
                     <button class="install" @click="installMod">

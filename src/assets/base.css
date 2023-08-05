@@ -8,6 +8,16 @@ h1,h2,h3,h4,h5,h6,p,span,button,img {
     font-weight: 200;
 }
 
+svg {
+    color: white;
+    height: 80%;
+    width: auto;
+}
+
+h1 > svg, h2 > svg, h3 > svg, h4 > svg, h5 > svg, h6 > svg, p > svg {
+    transform: translateY(10%);
+}
+
 button:focus {
     border-radius: 0.4rem;
     outline: 2px white solid;

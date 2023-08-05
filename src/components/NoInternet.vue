@@ -1,6 +1,6 @@
 <template>
     <div id="nointernet">
-        <img src="../images/networkError.webp">
+        <Icon icon="svg-spinners:3-dots-scale"/>
         <h1>Нет подключения к интернету</h1>
     </div>
 </template>
@@ -17,9 +17,5 @@
 
 #nointernet h1 {
     text-align: center;
-}
-
-#nointernet img {
-    width: 5rem;
 }
 </style>

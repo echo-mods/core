@@ -17,6 +17,9 @@ import { ref } from 'vue'
 import { useSessionStore } from './stores/SessionStore.js'
 const sessionStore = useSessionStore()
 
+// Other imports
+import { Icon } from '@iconify/vue';
+
 // Connection management
 const internet_present = ref(navigator.onLine)
 const update = () => {
@@ -27,9 +30,9 @@ window.addEventListener("online", update);
 </script>
 
 <template>
-  <Topbar version="0.2.0" build_label="dev build" />
+  <Topbar version="0.1.5" build_label="dev build" />
   <NoInternet v-if="!internet_present" />
-  <main>
+  <main v-else>
     <Sidebar />
     <div id="content">
       <Transition name="view" mode="out-in">

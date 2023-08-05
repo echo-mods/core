@@ -4,6 +4,9 @@ import { ref, onMounted } from 'vue'
 import { useSessionStore } from '../stores/SessionStore.js'
 import { fetchAPI } from "../modules/fetch"
 
+// Other imports
+import { Icon } from '@iconify/vue';
+
 const sessionStore = useSessionStore()
 const cards = ref()
 
@@ -40,11 +43,11 @@ onMounted(loadSection)
             <div class="text-info">
                 <h2 class="name">{{ mod.name }}</h2>
                 <h3 class="rating">
-                    <i class="fa-solid fa-chart-simple"></i>
+                    <Icon icon="streamline:interface-favorite-like-1-reward-social-up-rating-media-like-thumb-hand"/>
                     {{ (mod.rating / 10).toFixed(2) }}
                 </h3>
                 <button @click="openModDetails(mod)">
-                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <Icon icon="line-md:cloud-down"/>
                 </button>
             </div>
         </div>
@@ -68,7 +71,7 @@ onMounted(loadSection)
     display: flex;
     padding: 0 1.5rem;
     align-items: center;
-    border: 2px rgba(255, 255, 255, 0.5) dashed;
+    border: 1px rgba(255, 255, 255, 0.3) solid;
     gap: 1rem;
     width: min-content;
     backdrop-filter: blur(1px);

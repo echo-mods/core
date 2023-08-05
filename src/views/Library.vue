@@ -40,59 +40,57 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
 
 <template>
     <div id="library">
-        <TransitionGroup name="views">
-            <div v-for="mod in installations" :style="{ completed: mod.completed }">
-                <img :src="`${mod.imageURL}`">
-                <h2>{{ mod.name }}</h2>
-                <h3 v-if="!mod.completed" v-html="`${mod.progress || '...'}`"></h3>
-                <h3 v-if="mod.completed" v-html="`<b>Установка завершена</b>`"></h3>
-                <div class="progress" :style="{ width: mod.progressWidth }"></div>
-            </div>
-        </TransitionGroup>
-        <h3 id="emptymsg" v-if="!installations || installations.length === 0">👀 Тут пусто...</h3>
+        <div id="installations">
+            <TransitionGroup name="views">
+                <div class="mod-installation" v-for="mod in installations" :class="{ completed: mod.completed }">
+                    <h2>{{ mod.name }}</h2>
+                    <h3 v-if="!mod.completed" v-html="`${mod.progress || '...'}`"></h3>
+                    <h3 v-if="mod.completed" v-html="`<b>Установка завершена</b>`"></h3>
+                    <div class="progress" :style="{ width: mod.progressWidth }"></div>
+                </div>
+            </TransitionGroup>
+        </div>
     </div>
 </template>
 
 <style scoped>
-#emptymsg {
-    width: 100%;
-    text-align: center;
-}
 
 #library {
     padding: 1rem;
+    display: flex;
+    gap: 1rem;
 }
 
-#library > div {
+#installations {
+    width: 25%;
+    min-width: fit-content;
+}
+
+#installations > div {
     position: relative;
     display: flex;
     align-items: center;
     gap: 1rem;
     border-radius: 1rem;
-    border: 2px rgba(255, 255, 255, 0.5) dashed;
+    border: 1px rgba(255, 255, 255, 0.3) solid;
     backdrop-filter: blur(1px);
     padding: 0.5rem;
-    height: 6rem;
+    height: 3rem;
     overflow: hidden;
 }
 
-#library > div.completed .progress {
+#installations > div.completed .progress {
     background-color: rgba(115, 255, 0, 0.4);
     border: 0 transparent solid;
 }
 
-#library > div h3 {
+#installations > div h3 {
     margin-left: auto;
     text-align: center;
 }
 
-#library > div img {
-    height: 100%;
-    border-radius: 0.5rem;
-    box-shadow: 0 0 0.5rem 0.2rem rgba(0,0,0,0.5);
-}
-
-#library > div .progress {
+#installations > div .progress {
+    backdrop-filter: blur(1rem);
     background-color: rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 1.5rem 0.5rem rgba(255, 255, 255, 0.2);
     position: absolute;
@@ -101,6 +99,6 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
     height: 100%;
     transition: all 0.3s;
     z-index: -1;
-    border-right: 1px dashed rgba(255, 255, 255, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
 }
 </style>
