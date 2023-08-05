@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../stores/SessionStore.js'
 import { useIpcRenderer } from '@vueuse/electron'
+import { Icon } from "@iconify/vue"
 var ipcRenderer = useIpcRenderer()
 const sessionStore = useSessionStore()
 
@@ -31,7 +32,9 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
         if (mod.id == modID) {
             mod.progress = `Распаковка - ${Math.round(percentage)}%`
             mod.progressWidth = `${percentage}%`
-            if (percentage === 100) { mod.completed = true }
+            if (percentage === 100) { setTimeout(() => {
+                mod.completed = true
+            }, 1000); }
         }
     });
 });
@@ -45,7 +48,9 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
                 <div class="mod-installation" v-for="mod in installations" :class="{ completed: mod.completed }">
                     <h2>{{ mod.name }}</h2>
                     <h3 v-if="!mod.completed" v-html="`${mod.progress || '...'}`"></h3>
-                    <h3 v-if="mod.completed" v-html="`<b>Установка завершена</b>`"></h3>
+                    <div class="completed-indicator" v-else>
+                        <Icon icon="line-md:confirm-circle-twotone"/>
+                    </div>
                     <div class="progress" :style="{ width: mod.progressWidth }"></div>
                 </div>
             </TransitionGroup>
@@ -79,11 +84,6 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
     overflow: hidden;
 }
 
-#installations > div.completed .progress {
-    background-color: rgba(115, 255, 0, 0.4);
-    border: 0 transparent solid;
-}
-
 #installations > div h3 {
     margin-left: auto;
     text-align: center;
@@ -100,5 +100,19 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
     transition: all 0.3s;
     z-index: -1;
     border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#installations > div.completed .progress {
+    opacity: 0;
+    border: 0 transparent solid;
+}
+
+#installations > div > .completed-indicator {
+    margin-left: auto;
+}
+
+#installations > div > .completed-indicator > svg {
+    height: 1.75rem;
+    transform: translateY(15%);
 }
 </style>

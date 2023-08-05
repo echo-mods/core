@@ -6,6 +6,7 @@ try {
 require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
+const AdmZip = require("adm-zip")
 const extract = require("extract-zip");
 
 const Store = require("electron-store");
@@ -62,7 +63,7 @@ async function createWindow() {
                 return "path";
             }
             const splitURL = downloadURL.split(".");
-            const archiveName = `installation_${modData.id}.${
+            const archiveName = `_i_${modData.id}_${Date.now()}.${
                 archive_type || "zip"
             }`;
             const writer = fs.createWriteStream(
@@ -102,17 +103,26 @@ async function createWindow() {
                 response.body.pipe(writer);
                 await finished(writer);
 
-                // ! Finished download + starting unzipper aproach
+                // Step 2 - Unzipping
+
                 const zipFilePath = `${resolvedPath}/${archiveName}`;
+                var AdmZipInstance = new AdmZip(zipFilePath);
 
                 // Extraction progress variables
                 let entriesExtracted = 0;
-                let totalEntries = 0;
+                let totalEntries = AdmZipInstance.getEntryCount();
 
-                // Start extraction
-                await extract(zipFilePath, {
-                    dir: resolvedPath,
-                    onEntry: () => {
+                const overwrittenFiles = [];
+
+                // Extracton message for client
+                event.sender.send("extract-progress", 0);
+                mainWindow.setProgressBar(0);
+
+                // Start actual extraction
+                AdmZipInstance.extractAllToAsync(
+                    resolvedPath,
+                    true,
+                    (entry, zipEntry) => {
                         entriesExtracted++;
                         const progress = Math.round(
                             (entriesExtracted / totalEntries) * 100
@@ -124,10 +134,23 @@ async function createWindow() {
                         );
                         mainWindow.setProgressBar(progress / 100);
                     },
-                });
+                    (error) => {
+                        if (error) {
+                            console.error(
+                                `Error extracting zip file: ${error}`
+                            );
+                        } else {
+                            event.sender.send(
+                                "extract-progress",
+                                modData.id,
+                                100
+                            );
+                        }
+                    }
+                );
 
                 mainWindow.setProgressBar(-1);
-                fs.unlinkSync(zipFilePath); // delete the zip file
+                fs.unlinkSync(zipFilePath); // Delete the zip file
 
                 // Remember installation
 

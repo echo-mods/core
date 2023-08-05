@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useSessionStore } from '../stores/SessionStore.js'
+import { Icon } from "@iconify/vue"
 const sessionStore = useSessionStore()
 
 const setSection = (sectionName) => {
@@ -11,13 +12,13 @@ const setSection = (sectionName) => {
 <template>
   <div id="sidebar">
     <button @click="setSection('explore')" :class="{ selected: sessionStore.currentSection === 'explore' }">
-      <img src="../images/exploreIcon.webp">
+      <Icon icon="line-md:home-simple-filled"/>
     </button>
     <button @click="setSection('library')" :class="{ selected: sessionStore.currentSection === 'library' }">
-      <img src="../images/libraryIcon.webp">
+      <Icon icon="line-md:check-list-3-filled"/>
     </button>
     <button @click="setSection('settings')" :class="{ selected: sessionStore.currentSection === 'settings' }" style="margin-top: auto;">
-      <img src="../images/settingsIcon.webp">
+      <Icon icon="ic:outline-settings"/>
     </button>
   </div>
 </template>
@@ -36,6 +37,7 @@ const setSection = (sectionName) => {
 
 #sidebar button {
   height: 2rem;
+  width: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,7 +47,7 @@ const setSection = (sectionName) => {
   cursor: pointer;
   transition: all 0.3s;
   border: none;
-  aspect-ratio: 1;
+  aspect-ratio: 1 !important;
   outline: none;
 }
 

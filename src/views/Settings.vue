@@ -44,7 +44,7 @@ const setGamePath = async (game) => {
     padding: 1rem;
     background-color: rgba(255, 255, 255, 0.01);
     height: calc(100% - 5rem);
-    outline: 0.1rem rgba(255, 255, 255, 0.6) dashed;
+    outline: 1px rgba(255, 255, 255, 0.4) solid;
     border-radius: 1rem;
     backdrop-filter: blur(1px);
     overflow: auto;
