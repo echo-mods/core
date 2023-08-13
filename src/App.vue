@@ -27,6 +27,8 @@ const update = () => {
 }
 window.addEventListener("offline", update);
 window.addEventListener("online", update);
+
+const test = ref(true)
 </script>
 
 <template>

@@ -12,13 +12,23 @@ const setSection = (sectionName) => {
 <template>
   <div id="sidebar">
     <button @click="setSection('explore')" :class="{ selected: sessionStore.currentSection === 'explore' }">
-      <Icon icon="line-md:home-simple-filled"/>
+      <TransitionGroup name="sidebar-icon">
+        <Icon v-if="sessionStore.currentSection === 'explore'" icon="line-md:home-simple-filled" />
+        <Icon v-else icon="line-md:home-twotone" />
+      </TransitionGroup>
     </button>
     <button @click="setSection('library')" :class="{ selected: sessionStore.currentSection === 'library' }">
-      <Icon icon="line-md:check-list-3-filled"/>
+      <TransitionGroup name="sidebar-icon">
+        <Icon v-if="sessionStore.currentSection === 'library'" icon="line-md:check-list-3-filled" />
+        <Icon v-else icon="line-md:list-3-twotone" />
+      </TransitionGroup>
     </button>
-    <button @click="setSection('settings')" :class="{ selected: sessionStore.currentSection === 'settings' }" style="margin-top: auto;">
-      <Icon icon="ic:outline-settings"/>
+    <button @click="setSection('settings')" :class="{ selected: sessionStore.currentSection === 'settings' }"
+      style="margin-top: auto;">
+      <TransitionGroup name="sidebar-icon">
+        <Icon v-if="sessionStore.currentSection === 'settings'" icon="line-md:grid-3-filled" />
+        <Icon v-else icon="line-md:grid-3" />
+      </TransitionGroup>
     </button>
   </div>
 </template>
@@ -49,6 +59,12 @@ const setSection = (sectionName) => {
   border: none;
   aspect-ratio: 1 !important;
   outline: none;
+  position: relative;
+}
+
+#sidebar button > svg {
+  position: absolute;
+  width: calc(80% - 0.3rem);
 }
 
 #sidebar button:hover {
@@ -70,4 +86,14 @@ const setSection = (sectionName) => {
 #sidebar button.selected img {
   transform: scale(1.04)
 }
-</style>
+
+.sidebar-icon-move,
+.sidebar-icon-enter-active,
+.sidebar-icon-leave-active {
+  transition: all 1.5s ease-in-out;
+}
+
+.sidebar-icon-enter-from,
+.sidebar-icon-leave-to {
+  opacity: 0;
+}</style>

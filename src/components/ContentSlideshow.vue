@@ -66,6 +66,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.slideshow-controls *:focus {
+	outline: none;
+}
+
 .content-container {
 	border-radius: 8px;
 	width: 70%;
@@ -88,7 +92,7 @@ onUnmounted(() => {
 	position: absolute;
 	left: 50%;
 	bottom: 10%;
-	height: 1.5rem;
+	height: 0.25rem;
 	display: flex;
 	justify-content: center;
 	align-items: center;
