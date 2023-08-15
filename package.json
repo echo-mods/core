@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/echo-mods/core.git"
   },
+  "description": "A mod manager made with ❤️ for the stalker community",
   "scripts": {
     "dev:build": "vite build --watch",
     "dev:process": "electron .",
