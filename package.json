@@ -11,7 +11,7 @@
   "scripts": {
     "dev:build": "vite build --watch",
     "dev:process": "electron .",
-    "make": "electron-forge make",
+    "make": "vite build && electron-forge make",
     "start": "electron-forge start",
     "package": "electron-forge package"
   },
