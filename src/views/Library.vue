@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue"
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../stores/SessionStore.js'
 import { useIpcRenderer } from '@vueuse/electron'
@@ -39,20 +40,29 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
     });
 });
 
+const removeIndex = (index) => {
+    installations.value.splice(index, 1)
+}
+
 </script>
 
 <template>
     <div id="library">
         <div id="installations">
-            <TransitionGroup name="views">
-                <div class="mod-installation" v-for="mod in installations" :class="{ completed: mod.completed }">
+            <h2>Установки</h2>
+            <TransitionGroup name="inst-cards">
+                <div class="mod-installation" v-for="(mod, index) in installations" :class="{ completed: mod.completed }" key="index">
                     <h2>{{ mod.name }}</h2>
                     <h3 v-if="!mod.completed" v-html="`${mod.progress || '...'}`"></h3>
                     <div class="completed-indicator" v-else>
                         <Icon icon="line-md:confirm-circle-twotone"/>
+                        <button @click="removeIndex(index)">
+                            <Icon icon="mdi:close"/>
+                        </button>
                     </div>
                     <div class="progress" :style="{ width: mod.progressWidth }"></div>
                 </div>
+                <h3 v-if="installations.length === 0">Тут пусто</h3>
             </TransitionGroup>
         </div>
     </div>
@@ -69,6 +79,20 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
 #installations {
     width: 25%;
     min-width: fit-content;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    border-left: 1px solid rgba(255,255,255,0.2);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    height: calc(100vh - 6rem);
+}
+
+#installations > h2 {
+    text-align: center;
+}
+
+#installations > h3 {
+    position: absolute;
+    text-align: center;
 }
 
 #installations > div {
@@ -109,10 +133,29 @@ ipcRenderer.on('extract-progress', (event, modID, percentage) => {
 
 #installations > div > .completed-indicator {
     margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
 }
 
-#installations > div > .completed-indicator > svg {
+#installations > div > .completed-indicator > button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#installations > div > .completed-indicator svg {
     height: 1.75rem;
     transform: translateY(15%);
+}
+
+.inst-cards-enter-from,
+.inst-cards-leave-to {
+    opacity: 0;
+    translate: -2rem 0;
+}
+
+.inst-cards-enter-active,
+.inst-cards-leave-active {
+    transition: all 0.3s;
 }
 </style>
