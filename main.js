@@ -1,5 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 if (require("electron-squirrel-startup")) app.quit();
+const { updateElectronApp } = require('update-electron-app')
+updateElectronApp()
 try {
     //require("electron-reload")(__dirname);
 } catch (error) {}

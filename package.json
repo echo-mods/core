@@ -1,7 +1,7 @@
 {
-  "name": "core",
+  "name": "echomods",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.6",
   "main": "main.js",
   "type": "commonjs",
   "repository": {
@@ -12,7 +12,7 @@
   "scripts": {
     "dev:build": "vite build --watch",
     "dev:process": "electron .",
-    "make": "vite build && electron-forge make",
+    "make": "electron-forge make",
     "start": "electron-forge start",
     "package": "electron-forge package"
   },
@@ -28,16 +28,18 @@
     "node-fetch": "^3.3.1",
     "pinia": "^2.0.35",
     "sass": "^1.63.5",
+    "update-electron-app": "^3.0.0",
     "vue": "^3.2.47",
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.1.1",
-    "@electron-forge/maker-deb": "^6.1.1",
-    "@electron-forge/maker-rpm": "^6.1.1",
-    "@electron-forge/maker-squirrel": "^6.1.1",
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
     "@electron-forge/maker-wix": "^6.1.0",
-    "@electron-forge/maker-zip": "^6.1.1",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
     "@iconify/vue": "^4.1.1",
     "@vitejs/plugin-vue": "^4.1.0",
     "electron": "^24.8.5",
