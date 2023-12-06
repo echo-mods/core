@@ -4,16 +4,23 @@
 	"version": "0.1.6",
 	"main": "main.js",
 	"type": "commonjs",
+	"author": {
+		"name": "Andrei Hudalla"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/echo-mods/core.git"
 	},
 	"description": "A mod manager made with ❤️ for the stalker community",
 	"build": {
-		"appId": "com.electron.echomods"
-	},
-	"nsis": {
-		"oneClick": true
+		"productName": "EchoMods",
+		"appId": "com.electron.echomods",
+		"directories": {
+			"output": "out",
+			"buildResources": "resources"
+		},
+		"nsis": {
+		}
 	},
 	"scripts": {
 		"dev:build": "vite build --watch",

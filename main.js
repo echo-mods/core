@@ -1,5 +1,4 @@
 const { app, BrowserWindow, dialog, ipcMain, shell: { openExternal } } = require("electron");
-if (require("electron-squirrel-startup")) app.quit();
 const { updateElectronApp } = require('update-electron-app')
 updateElectronApp()
 //
