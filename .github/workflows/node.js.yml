@@ -36,4 +36,4 @@ jobs:
     - run: sudo wineboot -u
     - run: sudo wget "https://dl.winehq.org/wine/wine-mono/7.4.0/wine-mono-7.4.0-x86.msi"
     - run: sudo wine start wine-mono-7.4.0-x86.msi
-    - run: npm run make
+    - run: npm run make 
