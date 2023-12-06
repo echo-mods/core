@@ -7,6 +7,10 @@ const fs = require("fs");
 const Store = require("electron-store");
 Store.initRenderer();
 
+const { autoUpdater } = require("electron-updater")
+
+autoUpdater.checkForUpdatesAndNotify()
+
 async function createWindow() {
 	const mainWindow = new BrowserWindow({
 		width: 800,
