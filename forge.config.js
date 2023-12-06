@@ -1,7 +1,7 @@
 module.exports = {
 	packagerConfig: {
 		asar: true,
-		ignore: [/node_modules$/, /src$/, /out$/]
+		ignore: [/src$/, /out$/]
 	},
 	rebuildConfig: {},
 	makers: [
@@ -25,13 +25,6 @@ module.exports = {
 		{
 			name: '@electron-forge/maker-rpm',
 			config: {},
-		},
-	],
-	plugins: [
-		{
-			name: '@electron-forge/plugin-auto-unpack-natives',
-			config: {},
-			s: ['darwin'],
 		},
 	],
 };
