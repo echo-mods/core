@@ -1,58 +1,62 @@
 {
-  "name": "echomods",
-  "private": true,
-  "version": "0.1.6",
-  "main": "main.js",
-  "type": "commonjs",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/echo-mods/core.git"
-  },
-  "description": "A mod manager made with ❤️ for the stalker community",
-  "scripts": {
-    "dev:build": "vite build --watch",
-    "dev:process": "electron .",
-    "make": "electron-forge make",
-    "start": "electron-forge start",
-    "package": "electron-forge package"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "@vueuse/core": "^10.6.1",
-    "@vueuse/electron": "^10.0.2",
-    "adm-zip": "^0.5.10",
-    "discord-rpc": "^4.0.1",
-    "dotenv": "^16.0.3",
-    "electron-squirrel-startup": "^1.0.0",
-    "electron-store": "^8.1.0",
-    "extract-zip": "^2.0.1",
-    "magnet-uri": "^7.0.5",
-    "node-fetch": "^3.3.1",
-    "node-gyp": "^10.0.1",
-    "pinia": "^2.0.35",
-    "sass": "^1.63.5",
-    "showdown": "^2.1.0",
-    "universal-cookie": "^6.1.1",
-    "update-electron-app": "^3.0.0",
-    "vue": "^3.2.47",
-    "ws": "^8.13.0"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^6.4.2",
-    "@electron-forge/maker-deb": "^6.4.2",
-    "@electron-forge/maker-rpm": "^6.4.2",
-    "@electron-forge/maker-squirrel": "^6.4.2",
-    "@electron-forge/maker-wix": "^6.1.0",
-    "@electron-forge/maker-zip": "^6.4.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
-    "@electron/rebuild": "^3.4.1",
-    "@iconify/vue": "^4.1.1",
-    "@vitejs/plugin-vue": "^4.1.0",
-    "electron": "^24.8.5",
-    "electron-reload": "^2.0.0-alpha.1",
-    "electron-wix-msi": "^5.0.0",
-    "esm": "^3.2.25",
-    "nodemon": "^3.0.1",
-    "vite": "^4.2.0"
-  }
+	"name": "echomods",
+	"private": true,
+	"version": "0.1.6",
+	"main": "main.js",
+	"type": "commonjs",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/echo-mods/core.git"
+	},
+	"description": "A mod manager made with ❤️ for the stalker community",
+	"build": {
+		"appId": "com.electron.echomods"
+	},
+	"nsis": {
+		"oneClick": true
+	},
+	"scripts": {
+		"dev:build": "vite build --watch",
+		"dev:process": "electron .",
+		"f:make": "electron-forge make",
+		"f:start": "electron-forge start",
+		"f:package": "electron-forge package",
+		"make": "vite build && electron-builder --win --x64"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.39.0",
+		"@vueuse/core": "^10.6.1",
+		"@vueuse/electron": "^10.0.2",
+		"adm-zip": "^0.5.10",
+		"discord-rpc": "^4.0.1",
+		"dotenv": "^16.0.3",
+		"electron-store": "^8.1.0",
+		"extract-zip": "^2.0.1",
+		"magnet-uri": "^7.0.5",
+		"node-fetch": "^3.3.1",
+		"pinia": "^2.0.35",
+		"sass": "^1.63.5",
+		"showdown": "^2.1.0",
+		"universal-cookie": "^6.1.1",
+		"update-electron-app": "^3.0.0",
+		"vue": "^3.2.47",
+		"ws": "^8.13.0"
+	},
+	"devDependencies": {
+		"@electron-forge/cli": "^6.4.2",
+		"@electron-forge/maker-deb": "^6.4.2",
+		"@electron-forge/maker-rpm": "^6.4.2",
+		"@electron-forge/maker-squirrel": "^6.4.2",
+		"@electron-forge/maker-wix": "^6.1.0",
+		"@electron-forge/maker-zip": "^6.4.2",
+		"@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
+		"@iconify/vue": "^4.1.1",
+		"@vitejs/plugin-vue": "^4.1.0",
+		"electron": "^24.8.5",
+		"electron-builder": "^24.9.1",
+		"electron-wix-msi": "^5.0.0",
+		"esm": "^3.2.25",
+		"nodemon": "^3.0.1",
+		"vite": "^4.2.0"
+	}
 }
