@@ -11,7 +11,7 @@
 		"type": "git",
 		"url": "https://github.com/echo-mods/core.git"
 	},
-	"description": "A mod manager made with ❤️ for the stalker community",
+	"description": "A mod manager made FOR the community!",
 	"build": {
 		"productName": "EchoMods",
 		"appId": "com.electron.echomods",
@@ -20,6 +20,33 @@
 			"buildResources": "resources"
 		},
 		"nsis": {
+			"oneClick": false,
+			"artifactName": "${productName} ${version} Setup.${ext}",
+			"language": "1049",
+			"displayLanguageSelector": true,
+			"createDesktopShortcut": false,
+			"installerSidebar": "installerSidebar.bmp"
+		},
+		"msi": {
+			"oneClick": false,
+			"createDesktopShortcut": false
+		},
+		"win": {
+			"publish": ["github"],
+			"target": [
+				{
+					"target": "nsis",
+					"arch": [
+						"x64"
+					]
+				},
+				{
+					"target": "msi",
+					"arch": [
+						"x64"
+					]
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -28,7 +55,7 @@
 		"f:make": "electron-forge make",
 		"f:start": "electron-forge start",
 		"f:package": "electron-forge package",
-		"make": "vite build && electron-builder --win --x64"
+		"make": "vite build && electron-builder --win --x64 --publish onTagOrDraft"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.39.0",
