@@ -27,4 +27,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
+    - run: dpkg --add-architecture i386 
+    - run: mkdir -pm755 /etc/apt/keyrings
+    - run: wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+    - run: wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/mantic/winehq-mantic.sources
+    - run: apt update
+    - run: apt install --install-recommends winehq-stable
     - run: npm run make
