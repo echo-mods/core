@@ -52,9 +52,6 @@
 	"scripts": {
 		"dev:build": "vite build --watch",
 		"dev:process": "electron .",
-		"f:make": "electron-forge make",
-		"f:start": "electron-forge start",
-		"f:package": "electron-forge package",
 		"make": "vite build && electron-builder --win --x64 --publish onTagOrDraft"
 	},
 	"dependencies": {
