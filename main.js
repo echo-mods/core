@@ -1,7 +1,5 @@
 const { app, BrowserWindow, dialog, ipcMain, shell: { openExternal } } = require("electron");
-const { updateElectronApp } = require('update-electron-app')
-updateElectronApp()
-//
+
 require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
@@ -10,9 +8,6 @@ const Store = require("electron-store");
 Store.initRenderer();
 
 async function createWindow() {
-	if (require("electron-squirrel-startup")) {
-		return;
-	}
 	const mainWindow = new BrowserWindow({
 		width: 800,
 		height: 600,
