@@ -1,15 +1,15 @@
-const { app, BrowserWindow, dialog, ipcMain, shell: { openExternal } } = require("electron");
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { configDotenv } from "dotenv";
+import updater from "electron-updater"
+import path from "path";
+import fs from "fs"
+import Store from "electron-store"
 
-require("dotenv").config();
-const path = require("path");
-const fs = require("fs");
-
-const Store = require("electron-store");
+configDotenv()
+const { openExternal } = shell
 Store.initRenderer();
 
-const { autoUpdater } = require("electron-updater")
-
-autoUpdater.checkForUpdatesAndNotify()
+updater.autoUpdater.checkForUpdatesAndNotify()
 
 app.setAsDefaultProtocolClient('echomods')
 
