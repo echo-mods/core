@@ -2,6 +2,7 @@
 // Composables
 import { useIpcRenderer } from "@vueuse/electron";
 import { initStorage } from './modules/storage'
+import { useSupabase } from "./composables/useSupabase";
 
 // Components
 import Topbar from "./components/Topbar.vue";
@@ -26,10 +27,12 @@ import { Icon } from "@iconify/vue";
 
 const Storage = initStorage()
 
+const supabase = useSupabase();
+
 const ipcRenderer = useIpcRenderer();
 const sessionStore = useSessionStore();
 
-const { currentSection } = storeToRefs(sessionStore);
+const { currentSection, currentMod } = storeToRefs(sessionStore);
 
 // Connection management
 const internet_present = ref(navigator.onLine);
@@ -41,8 +44,24 @@ window.addEventListener("online", update);
 
 watchEffect(() => Storage.set("section", currentSection.value))
 
-ipcRenderer.on("deeplink", (event, link) => {
-	console.log(link)
+ipcRenderer.on("deeplink", async (event, params) => {
+	const { targetLink: link } = params
+	const trimmed = link.split("echomods://")[1]
+	const constructed = `https://deeplink.action/` + trimmed.slice(0, trimmed.length)
+	const url = new URL(constructed)
+	const action = url.searchParams.get("action")
+	switch (action) {
+		case ("openmod"): {
+			console.log(url.href)
+			const id = url.searchParams.get("id")
+			const { data: mod } = await supabase.from("mods").select("*, mod-builds(*)").eq("mod_id", id).single();
+			if (mod) {
+				currentMod.value = mod
+				currentSection.value = "details"
+			}
+			break
+		}
+	}
 })
 </script>
 
