@@ -19,6 +19,12 @@
 			"output": "out",
 			"buildResources": "resources"
 		},
+		"protocols": {
+			"name": "EchoMods",
+			"schemes": [
+				"echomods"
+			]
+		},
 		"nsis": {
 			"oneClick": false,
 			"artifactName": "${productName} ${version} Setup.${ext}",

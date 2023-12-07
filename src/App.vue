@@ -1,6 +1,6 @@
 <script setup>
 // Composables
-import { useSupabase } from "./composables/useSupabase";
+import { useIpcRenderer } from "@vueuse/electron";
 import { initStorage } from './modules/storage'
 
 // Components
@@ -26,6 +26,7 @@ import { Icon } from "@iconify/vue";
 
 const Storage = initStorage()
 
+const ipcRenderer = useIpcRenderer();
 const sessionStore = useSessionStore();
 
 const { currentSection } = storeToRefs(sessionStore);
@@ -39,6 +40,10 @@ window.addEventListener("offline", update);
 window.addEventListener("online", update);
 
 watchEffect(() => Storage.set("section", currentSection.value))
+
+ipcRenderer.on("deeplink", (event, link) => {
+	console.log(link)
+})
 </script>
 
 <template>

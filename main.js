@@ -11,8 +11,19 @@ const { autoUpdater } = require("electron-updater")
 
 autoUpdater.checkForUpdatesAndNotify()
 
+if (process.defaultApp) {
+	if (process.argv.length >= 2) {
+		app.setAsDefaultProtocolClient('echomods', process.execPath, [path.resolve(process.argv[1])])
+	}
+} else {
+	app.setAsDefaultProtocolClient('echomods')
+}
+
+const gotTheLock = app.requestSingleInstanceLock()
+
+let mainWindow
 async function createWindow() {
-	const mainWindow = new BrowserWindow({
+	mainWindow = new BrowserWindow({
 		width: 800,
 		height: 600,
 		minWidth: 800,
@@ -38,6 +49,12 @@ async function createWindow() {
 
 	mainWindow.maximize();
 	mainWindow.loadFile("dist/index.html");
+
+	if (process.argv.length > 1) {
+		mainWindow.webContents.send("deeplink", {
+			targetLink: process.argv[process.argv.length - 1],
+		});
+	}
 
 	ipcMain.on("minimiseApp", () => {
 		mainWindow.minimize();
@@ -111,15 +128,29 @@ async function createWindow() {
 	});
 }
 
-app.whenReady().then(() => {
-	createWindow();
 
-	app.on("activate", () => {
-		if (BrowserWindow.getAllWindows().length === 0) {
-			createWindow();
+if (!gotTheLock) {
+	app.quit()
+} else {
+	app.on('second-instance', (event, commandLine, workingDirectory) => {
+		// Someone tried to run a second instance, we should focus our window.
+		if (mainWindow) {
+			if (mainWindow.isMinimized()) mainWindow.restore()
+			mainWindow.focus()
+			mainWindow.webContents.send("deeplink", {
+				targetLink: commandLine[commandLine.length - 1],
+			});
 		}
+	})
+	app.whenReady().then(() => {
+		createWindow();
+		app.on("activate", () => {
+			if (BrowserWindow.getAllWindows().length === 0) {
+				createWindow();
+			}
+		});
 	});
-});
+}
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
