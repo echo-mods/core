@@ -45,8 +45,10 @@ async function createWindow() {
 	mainWindow.loadFile("dist/index.html");
 
 	if (process.argv.length > 1) {
-		mainWindow.webContents.send("deeplink", {
-			targetLink: process.argv[process.argv.length - 1],
+		mainWindow.on("ready-to-show", () => {
+			mainWindow.webContents.send("deeplink", {
+				targetLink: process.argv[process.argv.length - 1],
+			});
 		});
 	}
 
