@@ -3,11 +3,11 @@ import { computed } from "@vue/reactivity";
 import { ref, onMounted } from "vue";
 import { useSessionStore } from "../stores/SessionStore.js";
 
-const supabase = useSupabase();
-
 // Other imports
 import { Icon } from "@iconify/vue";
 import { useSupabase } from "../composables/useSupabase";
+
+const supabase = useSupabase();
 
 const sessionStore = useSessionStore();
 const cards = ref();
