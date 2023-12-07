@@ -11,13 +11,7 @@ const { autoUpdater } = require("electron-updater")
 
 autoUpdater.checkForUpdatesAndNotify()
 
-if (process.defaultApp) {
-	if (process.argv.length >= 2) {
-		app.setAsDefaultProtocolClient('echomods', process.execPath, [path.resolve(process.argv[1])])
-	}
-} else {
-	app.setAsDefaultProtocolClient('echomods')
-}
+app.setAsDefaultProtocolClient('echomods')
 
 const gotTheLock = app.requestSingleInstanceLock()
 
