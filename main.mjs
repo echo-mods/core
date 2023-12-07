@@ -88,7 +88,7 @@ async function createWindow() {
 				modal: true,
 				webPreferences: {
 					contextIsolation: false,
-					preload: path.join(__dirname, './preload.js'),
+					preload: path.resolve('preload.js'),
 				}
 			})
 			auth_win.loadURL('https://echomods.vercel.app/auth/login?electron=true')
