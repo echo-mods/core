@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { configDotenv } from "dotenv";
+import WebTorrent from "webtorrent"
 import updater from "electron-updater"
 import path from "path";
 import fs from "fs"
@@ -14,6 +15,8 @@ updater.autoUpdater.checkForUpdatesAndNotify()
 app.setAsDefaultProtocolClient('echomods')
 
 const gotTheLock = app.requestSingleInstanceLock()
+
+const Torrent = new WebTorrent();
 
 let mainWindow
 async function createWindow() {
@@ -41,6 +44,8 @@ async function createWindow() {
 
 	let auth_windows = []
 
+	const setProgress = (value) => mainWindow.setProgressBar(value)
+
 	mainWindow.maximize();
 	mainWindow.loadFile("dist/index.html");
 
@@ -66,14 +71,29 @@ async function createWindow() {
 		mainWindow.close();
 	});
 	ipcMain.handle("set_progress", (event, value) => {
-		mainWindow.setProgressBar(value)
+		setProgress(value)
 	});
 	ipcMain.handle(
 		"install_build",
-		async (event, build, savePath, fileName, buffer) => {
-			const filePath = path.resolve(savePath, fileName)
-			await fs.mkdirSync(savePath, { recursive: true })
-			await fs.writeFileSync(filePath, buffer);
+		async (event, magnet, installationPath, torrentKeys) => {
+			let torrent = {}
+			const onTorrent = (download) => {
+				const interval = setInterval(() => {
+					torrentKeys.forEach((key) => (torrent[key] = download[key]));
+					mainWindow.send("torrent-progress", magnet, torrent)
+					setProgress(download.progress)
+				}, 500);
+				download.on("done", async () => {
+					torrent.progress = 1;
+					mainWindow.send("torrent-progress", magnet, torrent)
+					setProgress(-1)
+				});
+			};
+			const torrents = Torrent.torrents
+			for (let i = 0; i < torrents.length; i++) {
+				if (torrents[i].magnetURI === magnet) return
+			}
+			Torrent.add(magnet, { path: installationPath }, onTorrent)
 		}
 	)
 	ipcMain.handle(

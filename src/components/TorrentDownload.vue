@@ -8,18 +8,16 @@ import { storeToRefs } from "pinia";
 
 const props = defineProps({
     magnet: String,
-	mod: Object,
-	build: Object
+    mod: Object,
+    build: Object,
 });
 
 const { magnet, mod, build } = props;
 
 const sessionStore = useSessionStore();
-const { installationPaths } =
-    storeToRefs(sessionStore);
+const { installationPaths } = storeToRefs(sessionStore);
 
 const ipcRenderer = useIpcRenderer();
-const Client = new WebTorrent();
 
 let torrent = reactive({
     name: "",
@@ -32,39 +30,16 @@ let torrent = reactive({
     ready: false,
     done: false,
     progress: 0,
-	uploadSpeed: 0
+    uploadSpeed: 0,
 });
 
 const torrentKeys = Object.keys(torrent);
 
-const unref = (val) => JSON.parse(JSON.stringify(val))
-
-const onTorrent = (download) => {
-    const interval = setInterval(() => {
-        torrentKeys.forEach((key) => (torrent[key] = download[key]));
-		ipcRenderer.invoke("set_progress", download.progress)
-    }, 100);
-	console.log("!")
-    download.on("done", async () => {
-        torrent.progress = 1;
-		ipcRenderer.invoke("set_progress", -1)
-		const gameID = mod.platform
-		let installationPath = installationPaths.value[gameID]
-		if (!mod.standalone && installationPath == null) {
-            const pathToGame = await askGamePath(gameID)
-            if (!pathToGame) { return }
-            installationPaths.value[gameID] = pathToGame
-            installationPath = pathToGame
-            sessionStore.savePath()
-		}
-		await download.files.forEach(async (file, index) => {
-			const fileName = file.name
-			await file.getBuffer((err, buffer) => {
-				ipcRenderer.invoke("install_build", unref(build), installationPath, fileName, buffer)
-			})
-		})
-    });
-};
+ipcRenderer.on("torrent-progress", (event, check, download) => {
+	if (check === magnet) {
+		torrentKeys.forEach((key) => (torrent[key] = download[key]));
+    }
+});
 
 const formatSizeUnits = (bytes) => {
     if (bytes >= 1073741824) {
@@ -83,24 +58,33 @@ const formatSizeUnits = (bytes) => {
     return bytes;
 };
 
-onMounted(() => {
-    Client.add(magnet, onTorrent, {
-		strategy: "rarest"
-	});
+onMounted(async () => {
+    const gameID = mod.platform;
+    let installationPath = installationPaths.value[gameID];
+    if (!mod.standalone && installationPath == null) {
+        const pathToGame = await askGamePath(gameID);
+        if (!pathToGame) {
+            return;
+        }
+        installationPaths.value[gameID] = pathToGame;
+        installationPath = pathToGame;
+        sessionStore.savePath();
+    }
+    ipcRenderer.invoke("install_build", magnet, installationPath, torrentKeys);
 });
 </script>
 
 <template>
     <div class="_torrent-download" v-if="torrent && torrent.ready">
-		<p><Icon icon="mdi:account-network"/> {{ torrent.numPeers }}</p>
+        <p><Icon icon="mdi:account-network" /> {{ torrent.numPeers }}</p>
         <p v-if="torrent.progress < 1">
             Скачивание - {{ (torrent.progress * 100).toFixed() }}% ({{
                 formatSizeUnits(torrent.downloadSpeed)
             }}/секунду)
         </p>
-        <p v-else>Мод раздаётся - {{
-                formatSizeUnits(torrent.uploadSpeed)
-            }}/секунду</p>
+        <p v-else>
+            Мод раздаётся - {{ formatSizeUnits(torrent.uploadSpeed) }}/секунду
+        </p>
         <div
             class="progress"
             :style="{ width: `${torrent.progress * 100}%` }"
@@ -111,8 +95,8 @@ onMounted(() => {
         <br />
         <br />
         Получение информации о скачивании
-		<br>
-		(Это может занять некоторое время)
+        <br />
+        (Это может занять некоторое время)
     </p>
 </template>
 
