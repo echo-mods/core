@@ -1,13 +1,24 @@
 <script setup>
 import { Icon } from "@iconify/vue";
-import { onMounted, reactive, defineProps, ref } from "vue";
+import { useIpcRenderer } from "@vueuse/electron";
+import { onMounted, reactive, defineProps } from "vue";
+import { askGamePath } from "../modules/mainProcessInteractions";
+import { useSessionStore } from "../stores/SessionStore.js";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
     magnet: String,
+	mod: Object,
+	build: Object
 });
 
-const { magnet } = props;
+const { magnet, mod, build } = props;
 
+const sessionStore = useSessionStore();
+const { installationPaths } =
+    storeToRefs(sessionStore);
+
+const ipcRenderer = useIpcRenderer();
 const Client = new WebTorrent();
 
 let torrent = reactive({
@@ -26,14 +37,32 @@ let torrent = reactive({
 
 const torrentKeys = Object.keys(torrent);
 
+const unref = (val) => JSON.parse(JSON.stringify(val))
+
 const onTorrent = (download) => {
-	
     const interval = setInterval(() => {
         torrentKeys.forEach((key) => (torrent[key] = download[key]));
+		ipcRenderer.invoke("set_progress", download.progress)
     }, 100);
-
-    download.on("done", () => {
+	console.log("!")
+    download.on("done", async () => {
         torrent.progress = 1;
+		ipcRenderer.invoke("set_progress", -1)
+		const gameID = mod.platform
+		let installationPath = installationPaths.value[gameID]
+		if (!mod.standalone && installationPath == null) {
+            const pathToGame = await askGamePath(gameID)
+            if (!pathToGame) { return }
+            installationPaths.value[gameID] = pathToGame
+            installationPath = pathToGame
+            sessionStore.savePath()
+		}
+		await download.files.forEach(async (file, index) => {
+			const fileName = file.name
+			await file.getBuffer((err, buffer) => {
+				ipcRenderer.invoke("install_build", unref(build), installationPath, fileName, buffer)
+			})
+		})
     });
 };
 
@@ -81,7 +110,9 @@ onMounted(() => {
         <Icon icon="svg-spinners:ring-resize" />
         <br />
         <br />
-        Получение сведений о моде
+        Получение информации о скачивании
+		<br>
+		(Это может занять некоторое время)
     </p>
 </template>
 

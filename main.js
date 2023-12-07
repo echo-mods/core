@@ -65,10 +65,15 @@ async function createWindow() {
 	ipcMain.on("closeApp", () => {
 		mainWindow.close();
 	});
+	ipcMain.handle("set_progress", (event, value) => {
+		mainWindow.setProgressBar(value)
+	});
 	ipcMain.handle(
 		"install_build",
-		async (event, build, savePath) => {
-
+		async (event, build, savePath, fileName, buffer) => {
+			const filePath = path.resolve(savePath, fileName)
+			await fs.mkdirSync(savePath, { recursive: true })
+			await fs.writeFileSync(filePath, buffer);
 		}
 	)
 	ipcMain.handle(

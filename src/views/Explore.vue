@@ -88,12 +88,12 @@ const listener = supabase
             <div class="overlay" />
 			<div class="text-info">
                 <h2 class="name">{{ mod.name }}</h2>
-                <h3 class="rating">
+                <!-- <h3 class="rating">
                     <Icon
                         icon="streamline:interface-favorite-like-1-reward-social-up-rating-media-like-thumb-hand"
                     />
                     {{ 0.5 }}
-                </h3>
+                </h3> -->
                 <button @click="openModDetails(mod)">
                     <Icon icon="line-md:cloud-down" />
                 </button>

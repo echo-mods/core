@@ -47,6 +47,7 @@ watchEffect(() => Storage.set("section", currentSection.value))
 ipcRenderer.on("deeplink", async (event, params) => {
 	const { targetLink: link } = params
 	const trimmed = link.split("echomods://")[1]
+	if (!trimmed) { return }
 	const constructed = `https://deeplink.action/` + trimmed.slice(0, trimmed.length)
 	const url = new URL(constructed)
 	const action = url.searchParams.get("action")

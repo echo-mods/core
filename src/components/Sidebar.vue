@@ -17,12 +17,12 @@ const setSection = (sectionName) => {
         <Icon v-else icon="line-md:home-twotone" />
       </TransitionGroup>
     </button>
-    <button @click="setSection('library')" :class="{ selected: sessionStore.currentSection === 'library' }">
+    <!-- <button @click="setSection('library')" :class="{ selected: sessionStore.currentSection === 'library' }">
       <TransitionGroup name="sidebar-icon">
         <Icon v-if="sessionStore.currentSection === 'library'" icon="line-md:check-list-3-filled" />
         <Icon v-else icon="line-md:list-3-twotone" />
       </TransitionGroup>
-    </button>
+    </button> -->
     <button @click="setSection('settings')" :class="{ selected: sessionStore.currentSection === 'settings' }"
       style="margin-top: auto;">
       <TransitionGroup name="sidebar-icon">

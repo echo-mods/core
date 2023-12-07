@@ -1,10 +1,9 @@
 <script setup>
-import { ref, onMounted, watchEffect, computed, reactive } from "vue";
+import { watchEffect } from "vue";
 import ContentSlideshow from "../components/ContentSlideshow.vue";
-import { askGamePath, openExternal } from "../modules/mainProcessInteractions";
+import { openExternal } from "../modules/mainProcessInteractions";
 import { storeToRefs } from "pinia";
 import { useSessionStore } from "../stores/SessionStore.js";
-import { useIpcRenderer } from "@vueuse/electron";
 import { Platforms } from "../composables/useDatabase";
 import { initStorage } from "../modules/storage";
 import { useSupabase } from "../composables/useSupabase";
@@ -17,10 +16,8 @@ const Storage = initStorage();
 
 const supabase = useSupabase();
 
-const ipcRenderer = useIpcRenderer();
-
 const sessionStore = useSessionStore();
-const { currentSection, currentMod, installationPaths, installations } =
+const { currentSection, currentMod, installationPaths, downloading } =
     storeToRefs(sessionStore);
 
 const mod_id = currentMod.value.mod_id;
@@ -116,6 +113,14 @@ const getIconForHost = (host) => {
     }
     return retval;
 };
+
+const installBuild = (build) => {
+	downloading.value = build.build_id
+}
+
+watchEffect(() => {
+	console.log(currentMod.value)
+})
 </script>
 
 <template>
@@ -125,12 +130,12 @@ const getIconForHost = (host) => {
             <div class="info">
                 <p class="description">{{ currentMod.description }}</p>
                 <div class="mini-info">
-                    <p class="rating">
+                    <!-- <p class="rating">
                         <Icon
                             icon="streamline:interface-favorite-like-1-reward-social-up-rating-media-like-thumb-hand"
                         />
                         {{ 5 }} / 10
-                    </p>
+                    </p> -->
                     <p class="platform">
                         <Icon icon="eos-icons:installing" />
                         {{ Platforms[currentMod.platform] }}
@@ -164,10 +169,10 @@ const getIconForHost = (host) => {
                     <hr style="opacity: 0.1" />
                     <div v-html="converter.makeHtml(build.changes)" />
                     <hr style="opacity: 0.1" />
-                    <button class="install" @click="installBuild(build)">
+                    <button v-if="downloading !== build.build_id" class="install" @click="installBuild(build)">
                         Установить
                     </button>
-					<TorrentDownload :magnet="build.download_url"/>
+					<TorrentDownload v-else :magnet="build.download_url" :mod="currentMod" :build="build"/>
                 </div>
             </div>
         </div>
