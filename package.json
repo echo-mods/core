@@ -60,6 +60,7 @@
 		"@supabase/supabase-js": "^2.39.0",
 		"@vueuse/core": "^10.6.1",
 		"@vueuse/electron": "^10.0.2",
+		"adm-zip": "^0.5.10",
 		"dotenv": "^16.0.3",
 		"electron-store": "^8.1.0",
 		"electron-updater": "^6.1.7",

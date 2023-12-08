@@ -5,6 +5,7 @@ import updater from "electron-updater"
 import path from "path";
 import fs from "fs"
 import Store from "electron-store"
+import AdmZip from "adm-zip"
 
 configDotenv()
 const { openExternal } = shell
@@ -78,24 +79,41 @@ async function createWindow() {
 		async (event, magnet, installationPath, torrentKeys) => {
 			let torrent = {}
 			const onTorrent = (download) => {
-				const interval = setInterval(() => {
+				const sendUpdate = () => {
 					torrentKeys.forEach((key) => (torrent[key] = download[key]));
 					mainWindow.send("torrent-progress", magnet, torrent)
-					setProgress(download.progress)
-				}, 500);
+					setProgress(download.progress < 1 ? download.progress : -1)
+				}
+				const interval = setInterval(sendUpdate, 500);
 				download.on("done", async () => {
-					torrent.progress = 1;
-					mainWindow.send("torrent-progress", magnet, torrent)
-					setProgress(-1)
+					sendUpdate()
+					dialog.showMessageBox({
+						title: "Предупреждение",
+						message: "Пока мод устанавливается программа может не отвечать.",
+						type: "warning"
+					})
+					const archive = new AdmZip(path.resolve(installationPath, download.name));
+					archive.extractAllTo(installationPath, true);
+					mainWindow.send("torrent-progress", magnet, true)
 				});
 			};
 			const torrents = Torrent.torrents
 			for (let i = 0; i < torrents.length; i++) {
 				if (torrents[i].magnetURI === magnet) return
 			}
+			console.log("Added", magnet)
 			Torrent.add(magnet, { path: installationPath }, onTorrent)
 		}
 	)
+	ipcMain.handle("processed-mod", async (event, magnet) => {
+		let found = false
+		console.log(Torrent.torrents)
+		Torrent.torrents.forEach(torrent => {
+			if (torrent.magnetURI === magnet) found = true 
+		})
+		console.log(found)
+		return found
+	})
 	ipcMain.handle(
 		"start_auth",
 		async (event) => {

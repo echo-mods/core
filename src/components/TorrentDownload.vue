@@ -1,7 +1,7 @@
 <script setup>
 import { Icon } from "@iconify/vue";
 import { useIpcRenderer } from "@vueuse/electron";
-import { onMounted, reactive, defineProps } from "vue";
+import { onMounted, reactive, defineProps, ref } from "vue";
 import { askGamePath } from "../modules/mainProcessInteractions";
 import { useSessionStore } from "../stores/SessionStore.js";
 import { storeToRefs } from "pinia";
@@ -32,11 +32,16 @@ let torrent = reactive({
     progress: 0,
     uploadSpeed: 0,
 });
+const done = ref(false)
 
 const torrentKeys = Object.keys(torrent);
 
 ipcRenderer.on("torrent-progress", (event, check, download) => {
 	if (check === magnet) {
+		if (download === true) {
+			done.value = true
+			return
+		}
 		torrentKeys.forEach((key) => (torrent[key] = download[key]));
     }
 });
@@ -83,6 +88,8 @@ onMounted(async () => {
             }}/секунду)
         </p>
         <p v-else>
+			{{ done ? "Мод установлен" : "Мод устанавливается..." }}
+			<br>
             Мод раздаётся - {{ formatSizeUnits(torrent.uploadSpeed) }}/секунду
         </p>
         <div
