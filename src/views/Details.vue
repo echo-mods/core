@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import ContentSlideshow from "../components/ContentSlideshow.vue";
 import { openExternal } from "../modules/mainProcessInteractions";
 import { storeToRefs } from "pinia";
@@ -7,7 +7,7 @@ import { useSessionStore } from "../stores/SessionStore.js";
 import { Platforms } from "../composables/useDatabase";
 import { initStorage } from "../modules/storage";
 import { useSupabase } from "../composables/useSupabase";
-import { useIpcRenderer } from "@vueuse/electron";
+import { useIpcRenderer, useIpcRendererInvoke } from "@vueuse/electron";
 import { computedAsync } from "@vueuse/core"
 import showdown from "showdown";
 
@@ -122,10 +122,29 @@ const installBuild = () => {
 	enableDownload.value = true
 }
 
-const downloaded = ref(false)
+const processed_mods = ref()
+
+const downloaded = ref([])
+
+const build_downloaded = (build, done) => {
+	let found = false
+	downloaded.value.forEach((processed_build) => {
+		if (processed_build.magnet === build.download_url) {
+			found = true
+			if (done) return processed_build.done
+		}
+	})
+	return found
+}
 
 onMounted(async () => {
-	const retval = await ipcRenderer.invoke("processed-mod", build.value.download_url)
+	processed_mods.value = await useIpcRendererInvoke("processed-mods")
+})
+
+watchEffect(() => {
+	if (!processed_mods.value) return []
+	const val = processed_mods.value.value
+	const retval = val ? val : []
 	downloaded.value = retval
 })
 
@@ -179,8 +198,8 @@ watchEffect(() => {
                     </h1>
                     <hr style="opacity: 0.1" />
                     <div v-html="converter.makeHtml(build.changes)" />
-                    <hr style="opacity: 0.1" />
-					<TorrentDownload v-if="downloaded || enableDownload" :magnet="build.download_url" :mod="currentMod" :build="build"/>
+                    <hr style="opacity: 0.1" /> <!--build_downloaded(build) || -->
+					<TorrentDownload v-if="build_downloaded(build) || enableDownload" :done="build_downloaded(build, true)" :magnet="build.download_url" :mod="currentMod" :build="build"/>
                     <button v-else class="install" @click="installBuild()">
                         Установить
                     </button>

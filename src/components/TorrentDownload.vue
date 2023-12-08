@@ -9,6 +9,7 @@ import { storeToRefs } from "pinia";
 const props = defineProps({
     magnet: String,
     mod: Object,
+	done: Boolean,
     build: Object,
 });
 
@@ -32,7 +33,7 @@ let torrent = reactive({
     progress: 0,
     uploadSpeed: 0,
 });
-const done = ref(false)
+const done = ref(props.done)
 
 const torrentKeys = Object.keys(torrent);
 

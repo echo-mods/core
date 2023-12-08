@@ -59,7 +59,7 @@ const logout = async () => {
     <div id="settings">
         <h2 class="heading">Аккаунт</h2>
         <button @click="startAuth" v-if="user === null">Войти</button>
-        <div class="user" v-else-if="user !== null">
+        <div class="user" v-else-if="user">
             <img class="pfp" v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" />
             <div class="data">
                 <h2 class="name" v-if="user.user_metadata.full_name">{{ user.user_metadata.full_name }}</h2>

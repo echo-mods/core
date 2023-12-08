@@ -16,14 +16,11 @@ import SettingsView from "./views/Settings.vue";
 import DetailsView from "./views/Details.vue";
 
 // Vue imports
-import { onMounted, ref, watchEffect } from "vue";
+import { ref, watchEffect } from "vue";
 import { storeToRefs } from "pinia";
 
 // Pinia stores
 import { useSessionStore } from "./stores/SessionStore.js";
-
-// Other imports
-import { Icon } from "@iconify/vue";
 
 const Storage = initStorage()
 
@@ -67,7 +64,7 @@ ipcRenderer.on("deeplink", async (event, params) => {
 </script>
 
 <template>
-    <Topbar version="0.2.0" build_label="dev build" />
+    <Topbar version="0.2.1" build_label="dev build" />
     <NoInternet v-if="false && !internet_present" />
     <main v-else>
         <Sidebar />

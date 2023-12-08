@@ -78,11 +78,12 @@ async function createWindow() {
 		"install_build",
 		async (event, magnet, installationPath, torrentKeys) => {
 			let torrent = {}
+			let extracting = false
 			const onTorrent = (download) => {
 				const sendUpdate = () => {
 					torrentKeys.forEach((key) => (torrent[key] = download[key]));
 					mainWindow.send("torrent-progress", magnet, torrent)
-					setProgress(download.progress < 1 ? download.progress : -1)
+					if (!extracting) setProgress(download.progress < 1 ? download.progress : -1)
 				}
 				const interval = setInterval(sendUpdate, 500);
 				download.on("done", async () => {
@@ -92,8 +93,19 @@ async function createWindow() {
 						message: "Пока мод устанавливается программа может не отвечать.",
 						type: "warning"
 					})
-					const archive = new AdmZip(path.resolve(installationPath, download.name));
-					archive.extractAllTo(installationPath, true);
+					const archivePath = path.resolve(installationPath, download.name)
+					const archive = new AdmZip(archivePath);
+					const entries = archive.getEntries()
+					const entryCount = entries.length
+					extracting = true
+					for (let i = 0; i < entryCount; i++) {
+						const entry = entries[i];
+						const relativePath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
+  						const destinationPath = `${installationPath}/${relativePath}`;
+						if (!entry.isDirectory) archive.extractEntryTo(entry, destinationPath, true);
+						setProgress((i + 1) / entryCount)
+					}
+					extracting = false
 					mainWindow.send("torrent-progress", magnet, true)
 				});
 			};
@@ -105,14 +117,14 @@ async function createWindow() {
 			Torrent.add(magnet, { path: installationPath }, onTorrent)
 		}
 	)
-	ipcMain.handle("processed-mod", async (event, magnet) => {
-		let found = false
-		console.log(Torrent.torrents)
-		Torrent.torrents.forEach(torrent => {
-			if (torrent.magnetURI === magnet) found = true 
+	ipcMain.handle("processed-mods", async (event) => {
+		const retval = Torrent.torrents.map((torrent) => {
+			return {
+				magnet: torrent.magnetURI,
+				done: torrent.done
+			}
 		})
-		console.log(found)
-		return found
+		return retval
 	})
 	ipcMain.handle(
 		"start_auth",
@@ -125,11 +137,10 @@ async function createWindow() {
 				parent: mainWindow,
 				modal: true,
 				webPreferences: {
-					contextIsolation: false,
-					preload: path.resolve('preload.js'),
+					preload: path.resolve('preload.auth.js'),
 				}
 			})
-			auth_win.loadURL('https://echomods.vercel.app/auth/login?electron=true')
+			auth_win.loadURL('http://localhost:5173/auth/login?electron=true')
 			auth_win.once('ready-to-show', () => {
 				auth_win.show()
 			})
@@ -147,7 +158,6 @@ async function createWindow() {
 	ipcMain.handle("link", (event, link) => {
 		openExternal(link);
 	});
-
 	ipcMain.handle("settings_pickInstallationPath", (event, game) => {
 		let savePath = null;
 		const games = {
