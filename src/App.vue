@@ -67,7 +67,7 @@ ipcRenderer.on("deeplink", async (event, params) => {
 </script>
 
 <template>
-    <Topbar version="0.1.6" build_label="dev build" />
+    <Topbar version="0.2.0" build_label="dev build" />
     <NoInternet v-if="false && !internet_present" />
     <main v-else>
         <Sidebar />
