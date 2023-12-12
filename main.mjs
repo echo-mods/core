@@ -11,11 +11,6 @@ configDotenv()
 const { openExternal } = shell
 Store.initRenderer();
 
-setTimeout(() => {
-	const autoUpdater = new NsisUpdater()
-	autoUpdater.checkForUpdatesAndNotify()
-}, 5000);
-
 app.setAsDefaultProtocolClient('echomods')
 
 const gotTheLock = app.requestSingleInstanceLock()
@@ -196,6 +191,8 @@ if (!gotTheLock) {
 	})
 	app.whenReady().then(() => {
 		createWindow();
+		const autoUpdater = new NsisUpdater()
+		autoUpdater.checkForUpdatesAndNotify()
 		app.on("activate", () => {
 			if (BrowserWindow.getAllWindows().length === 0) {
 				createWindow();
