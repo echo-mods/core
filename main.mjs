@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { configDotenv } from "dotenv";
 import WebTorrent from "webtorrent"
-import updater from "electron-updater"
+import { NsisUpdater } from "electron-updater"
 import path from "path";
 import fs from "fs"
 import Store from "electron-store"
@@ -11,7 +11,10 @@ configDotenv()
 const { openExternal } = shell
 Store.initRenderer();
 
-updater.autoUpdater.checkForUpdatesAndNotify()
+setTimeout(() => {
+	const autoUpdater = new NsisUpdater()
+	autoUpdater.checkForUpdatesAndNotify()
+}, 5000);
 
 app.setAsDefaultProtocolClient('echomods')
 
@@ -101,7 +104,7 @@ async function createWindow() {
 					for (let i = 0; i < entryCount; i++) {
 						const entry = entries[i];
 						const relativePath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
-  						const destinationPath = `${installationPath}/${relativePath}`;
+						const destinationPath = `${installationPath}/${relativePath}`;
 						if (!entry.isDirectory) archive.extractEntryTo(entry, destinationPath, true);
 						setProgress((i + 1) / entryCount)
 					}
