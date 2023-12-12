@@ -1,7 +1,7 @@
 {
 	"name": "echomods",
 	"private": true,
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"main": "main.mjs",
 	"type": "module",
 	"author": {
@@ -39,7 +39,11 @@
 		},
 		"win": {
 			"publish": [
-				"github"
+				{
+					"provider": "github",
+					"owner": "echo-mods",
+					"repo": "core"
+				}
 			],
 			"target": [
 				{
