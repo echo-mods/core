@@ -3,13 +3,12 @@ import { configDotenv } from "dotenv";
 import WebTorrent from "webtorrent"
 import { NsisUpdater } from "electron-updater"
 import path from "path";
-import fs from "fs"
 import Store from "electron-store"
 import AdmZip from "adm-zip"
-
+import { exec } from'node:child_process'
 configDotenv()
 const { openExternal } = shell
-Store.initRenderer();
+
 
 app.setAsDefaultProtocolClient('echomods')
 
@@ -41,10 +40,14 @@ async function createWindow() {
 		auth_windows = []
 	}
 
+	const processedBuilds = async () => {
+		const retval = Storage.get("processed_builds")
+		return retval
+	}
+
 	let auth_windows = []
 
 	const setProgress = (value) => mainWindow.setProgressBar(value)
-
 	mainWindow.maximize();
 	mainWindow.loadFile("dist/index.html");
 
@@ -74,7 +77,7 @@ async function createWindow() {
 	});
 	ipcMain.handle(
 		"install_build",
-		async (event, magnet, installationPath, torrentKeys) => {
+		async (event, magnet, installationPath, torrentKeys, mod_id, build_id) => {
 			let torrent = {}
 			let extracting = false
 			const onTorrent = (download) => {
@@ -97,13 +100,20 @@ async function createWindow() {
 					const entryCount = entries.length
 					extracting = true
 					for (let i = 0; i < entryCount; i++) {
-						const entry = entries[i];
-						const relativePath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
-						const destinationPath = `${installationPath}/${relativePath}`;
-						if (!entry.isDirectory) archive.extractEntryTo(entry, destinationPath, true);
+						try {
+							const entry = entries[i];
+							const relativePath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
+							const destinationPath = `${installationPath}/${relativePath}`;
+							if (!entry.isDirectory) archive.extractEntryTo(entry, destinationPath, true);
+						} catch {}
 						setProgress((i + 1) / entryCount)
 					}
 					extracting = false
+					Storage.set(`processed_builds.${build_id}`, true)
+					Storage.set(`installed_mods.${installationPath}`, {
+						mod_id,
+						build_id
+					})
 					mainWindow.send("torrent-progress", magnet, true)
 				});
 			};
@@ -111,19 +121,24 @@ async function createWindow() {
 			for (let i = 0; i < torrents.length; i++) {
 				if (torrents[i].magnetURI === magnet) return
 			}
-			console.log("Added", magnet)
+			Storage.set(`processed_builds.${build_id}`, false)
 			Torrent.add(magnet, { path: installationPath }, onTorrent)
 		}
 	)
-	ipcMain.handle("processed-mods", async (event) => {
-		const retval = Torrent.torrents.map((torrent) => {
-			return {
-				magnet: torrent.magnetURI,
-				done: torrent.done
-			}
-		})
-		return retval
+	ipcMain.handle("launch_build", async (event, build) => {
+		
+		exec(path.join(build.exec_path))
 	})
+	ipcMain.handle("version-intalled", async (event, mod_id) => {
+		const installed = Storage.get(`installed_mods`)
+		const paths = Object.keys(installed)
+		for (let i = 0; i < paths.length; i++) {
+			const path = paths[i]
+			const installation = installed[path]
+			if (installation.mod_id === mod_id) return installation
+		}
+	})
+	ipcMain.handle("processed-builds", processedBuilds)
 	ipcMain.handle(
 		"start_auth",
 		async (event) => {

@@ -48,7 +48,7 @@ const handle_postgres_changes = (payload) => {
             }
         }
     } else if (payload.table === "mod-builds") {
-        const build = payload.new ? payload.new : payload.old;
+        const build = payload.new.build_id ? payload.new : payload.old;
         switch (payload.eventType) {
             case "INSERT":
                 if (build.mod_id === mod_id) {
@@ -58,7 +58,7 @@ const handle_postgres_changes = (payload) => {
             case "UPDATE":
                 currentMod.value["mod-builds"].forEach(
                     (build_checking, index) => {
-                        if (build_checking.mod_id === mod_id) {
+                        if (build_checking.build_id === build.build_id) {
                             currentMod.value["mod-builds"][index] = build;
                         }
                     }
@@ -67,7 +67,8 @@ const handle_postgres_changes = (payload) => {
             case "DELETE":
                 currentMod.value["mod-builds"].forEach(
                     (build_checking, index) => {
-                        if (build_checking.mod_id === mod_id) {
+						console.log(build_checking, build)
+                        if (build_checking.build_id === build.build_id) {
                             currentMod.value["mod-builds"].splice(index, 1);
                         }
                     }
@@ -117,40 +118,42 @@ const getIconForHost = (host) => {
     return retval;
 };
 
-const enableDownload = ref(false)
-const installBuild = () => {
-	enableDownload.value = true
+const enableDownload = ref()
+
+const processedBuilds = computedAsync(async () => {
+	return useIpcRendererInvoke("processed-builds")
+}, {})
+
+const updateAvailable = ref(false)
+
+const updateMod = () => {
+	if (updateAvailable.value) {
+		updateAvailable.value.sort((a, b) => b.build_id - a.build_id)
+		updateAvailable.value.forEach(build => {
+			enableDownload.value = build.build_id
+		})
+	}
 }
 
-const processed_mods = ref()
+const builds = computed(() => currentMod.value["mod-builds"].sort((a, b) => b.build_id - a.build_id))
 
-const downloaded = ref([])
-
-const build_downloaded = (build, done) => {
-	let found = false
-	downloaded.value.forEach((processed_build) => {
-		if (processed_build.magnet === build.download_url) {
-			found = true
-			if (done) return processed_build.done
+watchEffect(async () => {
+	const versionAwait = await useIpcRendererInvoke("version-intalled", mod_id)
+	watchEffect(stop => {
+		let updates = []
+		const version = versionAwait.value
+		if (version) {
+			for (let i = 0; i < builds.value.length; i++) {
+				const build = builds.value[i]
+				if (build.build_id > version.build_id) {
+					updates.push(build)
+				}
+			}
+			stop()
 		}
+		updateAvailable.value = updates.length === 0 ? false : updates
 	})
-	return found
-}
-
-onMounted(async () => {
-	processed_mods.value = await useIpcRendererInvoke("processed-mods")
-})
-
-watchEffect(() => {
-	if (!processed_mods.value) return []
-	const val = processed_mods.value.value
-	const retval = val ? val : []
-	downloaded.value = retval
-})
-
-watchEffect(() => {
-	console.log(currentMod.value)
-})
+}, false)
 </script>
 
 <template>
@@ -188,21 +191,20 @@ watchEffect(() => {
                             <Icon :icon="getIconForHost(linkHost(link))" />
                         </button>
                     </div>
-                </div>
+					<button v-if="!updateAvailable" class="play"><Icon icon="material-symbols:play-arrow"/>Запустить</button>
+					<button v-else @click="updateMod" class="update"><Icon icon="material-symbols:sync-problem-rounded"/>Обновить</button>
+				</div>
             </div>
             <div class="builds">
-                <div class="build" v-for="build in currentMod['mod-builds']">
+                <div class="build" v-for="build in builds">
                     <h1>
                         {{ build.version.startsWith("v") ? "" : "v"
                         }}{{ build.version }}
                     </h1>
                     <hr style="opacity: 0.1" />
                     <div v-html="converter.makeHtml(build.changes)" />
-                    <hr style="opacity: 0.1" /> <!--build_downloaded(build) || -->
-					<TorrentDownload v-if="build_downloaded(build) || enableDownload" :done="build_downloaded(build, true)" :magnet="build.download_url" :mod="currentMod" :build="build"/>
-                    <button v-else class="install" @click="installBuild()">
-                        Установить
-                    </button>
+                    <hr style="opacity: 0.1" />
+					<TorrentDownload v-if="processedBuilds.value && (processedBuilds.value[build.build_id.toString()] !== undefined || enableDownload === build.build_id)" :done="processedBuilds.value[build.build_id.toString()]" :magnet="build.download_url" :mod="currentMod" :build="build"/>
                 </div>
             </div>
         </div>
@@ -255,6 +257,16 @@ watchEffect(() => {
             box-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.5);
             background-color: rgba(255, 255, 255, 0.2);
         }
+		&.play, &.update {
+			margin-top: 1rem;
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			justify-content: center;
+			svg {
+				font-size: 1.2rem;
+			}
+		}
     }
     .mini-info {
         > p {

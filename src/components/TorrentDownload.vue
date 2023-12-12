@@ -1,7 +1,7 @@
 <script setup>
 import { Icon } from "@iconify/vue";
 import { useIpcRenderer } from "@vueuse/electron";
-import { onMounted, reactive, defineProps, ref } from "vue";
+import { onMounted, reactive, defineProps, ref, computed } from "vue";
 import { askGamePath } from "../modules/mainProcessInteractions";
 import { useSessionStore } from "../stores/SessionStore.js";
 import { storeToRefs } from "pinia";
@@ -33,14 +33,18 @@ let torrent = reactive({
     progress: 0,
     uploadSpeed: 0,
 });
-const done = ref(props.done)
+const override_done = ref(false)
+
+const done = computed(() => {
+	return override_done.value || props.done
+})
 
 const torrentKeys = Object.keys(torrent);
 
 ipcRenderer.on("torrent-progress", (event, check, download) => {
 	if (check === magnet) {
 		if (download === true) {
-			done.value = true
+			override_done.value = true
 			return
 		}
 		torrentKeys.forEach((key) => (torrent[key] = download[key]));
@@ -76,26 +80,29 @@ onMounted(async () => {
         installationPath = pathToGame;
         sessionStore.savePath();
     }
-    ipcRenderer.invoke("install_build", magnet, installationPath, torrentKeys);
+	if (done.value) return
+    ipcRenderer.invoke("install_build", magnet, installationPath, torrentKeys, mod.mod_id, build.build_id);
 });
 </script>
 
 <template>
-    <div class="_torrent-download" v-if="torrent && torrent.ready">
+    <div class="_torrent-download" v-if="torrent && torrent.ready || done">
         <p><Icon icon="mdi:account-network" /> {{ torrent.numPeers }}</p>
-        <p v-if="torrent.progress < 1">
+        <p v-if="torrent.progress < 1 && !done">
             Скачивание - {{ (torrent.progress * 100).toFixed() }}% ({{
                 formatSizeUnits(torrent.downloadSpeed)
             }}/секунду)
         </p>
         <p v-else>
 			{{ done ? "Мод установлен" : "Мод устанавливается..." }}
-			<br>
-            Мод раздаётся - {{ formatSizeUnits(torrent.uploadSpeed) }}/секунду
+			<template v-if="torrent.ready">
+				<br>
+				Мод раздаётся - {{ formatSizeUnits(torrent.uploadSpeed) }}/секунду
+			</template>
         </p>
         <div
             class="progress"
-            :style="{ width: `${torrent.progress * 100}%` }"
+            :style="{ width: `${done ? 100 : torrent.progress * 100}%` }"
         ></div>
     </div>
     <p style="text-align: center" v-else>
