@@ -8,7 +8,6 @@
 		"name": "Andrei Hudalla"
 	},
 	"repository": "https://github.com/echo-mods/core",
-	"repository": "https://github.com/echo-mods/core",
 	"description": "A mod manager made FOR the community!",
 	"build": {
 		"productName": "EchoMods",
@@ -31,10 +30,6 @@
 			"createDesktopShortcut": false,
 			"allowToChangeInstallationDirectory": true,
 			"installerSidebar": "installerSidebar.bmp"
-		},
-		"msi": {
-			"oneClick": false,
-			"createDesktopShortcut": false
 		},
 		"win": {
 			"publish": [

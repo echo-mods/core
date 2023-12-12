@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { configDotenv } from "dotenv";
 import WebTorrent from "webtorrent"
-import { NsisUpdater } from "electron-updater"
+import { autoUpdater } from "electron-updater"
 import path from "path";
 import Store from "electron-store"
 import AdmZip from "adm-zip"
@@ -206,7 +206,6 @@ if (!gotTheLock) {
 	})
 	app.whenReady().then(() => {
 		createWindow();
-		const autoUpdater = new NsisUpdater()
 		autoUpdater.checkForUpdatesAndNotify()
 		app.on("activate", () => {
 			if (BrowserWindow.getAllWindows().length === 0) {
