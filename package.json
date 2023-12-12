@@ -11,7 +11,7 @@
 	"description": "A mod manager made FOR the community!",
 	"build": {
 		"productName": "EchoMods",
-		"appId": "com.electron.echomods",
+		"appId": "com.github.echo-mods.core",
 		"directories": {
 			"output": "out",
 			"buildResources": "resources"
