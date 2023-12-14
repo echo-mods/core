@@ -24,6 +24,9 @@ import { storeToRefs } from "pinia";
 // Pinia stores
 import { useSessionStore } from "./stores/SessionStore.js";
 
+// Other
+import { Icon } from "@iconify/vue";
+
 const Storage = initStorage()
 
 const supabase = useSupabase();
@@ -64,6 +67,11 @@ ipcRenderer.on("deeplink", async (event, params) => {
 		}
 	}
 })
+const updateData = ref()
+ipcRenderer.on("au-downloaded", (event, data) => {
+	console.log(event, data)
+	updateData.value = data
+})
 </script>
 
 <template>
@@ -90,10 +98,16 @@ ipcRenderer.on("deeplink", async (event, params) => {
                 />
             </Transition>
         </div>
+		<div class="update-dialog" v-if="updateData">
+			<Icon icon="line-md:download-outline-loop"/>
+			<p v-if="updateData !== true">Доступно обновление</p>
+			<h5 v-if="updateData === true">Обновление скачано - перезагрузите приложение чтобы установить его.</h5>
+			<h5 v-else>{{ updateData }}</h5>
+		</div>
     </main>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .view-enter-active,
 .view-leave-active {
     transition: all 0.2s ease-in-out;
@@ -103,5 +117,25 @@ ipcRenderer.on("deeplink", async (event, params) => {
 .view-leave-to {
     opacity: 0;
     transform: translateX(1rem);
+}
+
+.update-dialog {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	border-radius: 1rem;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	padding: 1rem;
+	position: fixed;
+	bottom: 1rem;
+	right: 1rem;
+	backdrop-filter: blur(0.1rem);
+	> * {
+		margin: 0;
+	}
+	svg {
+		width: 2rem;
+		margin: 0 auto;
+	}
 }
 </style>

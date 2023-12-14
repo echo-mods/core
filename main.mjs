@@ -215,7 +215,7 @@ if (!gotTheLock) {
 		});
 		const autoUpdater = new NsisUpdater()
 		autoUpdater.on('download-progress', (progressObj) => {
-			const message = `Скачиваем обновление - ${progressObj.percent}%`
+			const message = `Скачивание - ${progressObj.percent}%`
 			mainWindow.webContents.send("au-downloaded", message)
 		})
 		autoUpdater.on('update-downloaded', (info) => {
