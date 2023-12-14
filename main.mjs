@@ -5,7 +5,7 @@ import { NsisUpdater } from "electron-updater"
 import path from "path";
 import Store from "electron-store"
 import AdmZip from "adm-zip"
-import { exec } from'node:child_process'
+import { exec } from 'node:child_process'
 configDotenv()
 const { openExternal } = shell
 
@@ -107,7 +107,7 @@ async function createWindow() {
 							const relativePath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
 							const destinationPath = `${installationPath}/${relativePath}`;
 							if (!entry.isDirectory) archive.extractEntryTo(entry, destinationPath, true);
-						} catch {}
+						} catch { }
 						setProgress((i + 1) / entryCount)
 					}
 					extracting = false
@@ -128,7 +128,7 @@ async function createWindow() {
 		}
 	)
 	ipcMain.handle("launch_build", async (event, build) => {
-		
+
 		exec(path.join(build.exec_path))
 	})
 	ipcMain.handle("version-intalled", async (event, mod_id) => {
@@ -214,6 +214,13 @@ if (!gotTheLock) {
 			}
 		});
 		const autoUpdater = new NsisUpdater()
+		autoUpdater.on('download-progress', (progressObj) => {
+			const message = `Скачиваем обновление - ${progressObj.percent}%`
+			mainWindow.webContents.send("au-downloaded", message)
+		})
+		autoUpdater.on('update-downloaded', (info) => {
+			mainWindow.webContents.send("au-downloaded", true)
+		});
 		autoUpdater.checkForUpdatesAndNotify()
 	});
 }
