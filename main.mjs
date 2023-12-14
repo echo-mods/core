@@ -9,6 +9,8 @@ import { exec } from'node:child_process'
 configDotenv()
 const { openExternal } = shell
 
+const Storage = new Store();
+Store.initRenderer()
 
 app.setAsDefaultProtocolClient('echomods')
 
