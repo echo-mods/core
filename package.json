@@ -24,7 +24,7 @@
 		},
 		"nsis": {
 			"oneClick": false,
-			"artifactName": "${productName} ${version} Setup.${ext}",
+			"artifactName": "${productName}-${version}-Setup.${ext}",
 			"language": "1049",
 			"displayLanguageSelector": true,
 			"createDesktopShortcut": false,
