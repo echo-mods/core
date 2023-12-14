@@ -13,21 +13,21 @@ const setSection = (sectionName) => {
   <div id="sidebar">
     <button @click="setSection('explore')" :class="{ selected: sessionStore.currentSection === 'explore' }">
       <TransitionGroup name="sidebar-icon">
-        <Icon v-if="sessionStore.currentSection === 'explore'" icon="line-md:home-simple-filled" />
-        <Icon v-else icon="line-md:home-twotone" />
+        <Icon v-if="sessionStore.currentSection === 'explore'" icon="line-md:star-filled" />
+        <Icon v-else icon="line-md:star-alt-twotone" />
       </TransitionGroup>
     </button>
-    <!-- <button @click="setSection('library')" :class="{ selected: sessionStore.currentSection === 'library' }">
+    <button @click="setSection('explore_files')" :class="{ selected: sessionStore.currentSection === 'explore_files' }">
       <TransitionGroup name="sidebar-icon">
-        <Icon v-if="sessionStore.currentSection === 'library'" icon="line-md:check-list-3-filled" />
-        <Icon v-else icon="line-md:list-3-twotone" />
+        <Icon v-if="sessionStore.currentSection === 'explore_files'" icon="line-md:document-code-twotone" />
+        <Icon v-else icon="line-md:document-code" />
       </TransitionGroup>
-    </button> -->
+    </button>
     <button @click="setSection('settings')" :class="{ selected: sessionStore.currentSection === 'settings' }"
       style="margin-top: auto;">
       <TransitionGroup name="sidebar-icon">
-        <Icon v-if="sessionStore.currentSection === 'settings'" icon="line-md:grid-3-filled" />
-        <Icon v-else icon="line-md:grid-3" />
+        <Icon v-if="sessionStore.currentSection === 'settings'" icon="line-md:cog-filled-loop" />
+        <Icon v-else icon="line-md:cog-filled" />
       </TransitionGroup>
     </button>
   </div>

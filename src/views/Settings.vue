@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
 import { askGamePath } from "../modules/mainProcessInteractions";
 import { useSessionStore } from "../stores/SessionStore.js";
@@ -14,7 +14,17 @@ const ipcRenderer = useIpcRenderer();
 
 const refreshing = ref(false);
 
+const { titleFrag } = storeToRefs(sessionStore)
+
 if (!sessionStore.installationPaths) sessionStore.installationPaths = {};
+
+onMounted(() => {
+	titleFrag.value = "Настройки"
+});
+
+onBeforeUnmount(() => {
+	titleFrag.value = undefined
+})
 
 const setGamePath = async (game) => {
     let pathToGame = await askGamePath(game);

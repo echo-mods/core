@@ -19,13 +19,13 @@ const Storage = initStorage();
 const supabase = useSupabase();
 
 const sessionStore = useSessionStore();
-const { currentSection, currentMod } =
+const { currentSection, OpenModID } =
     storeToRefs(sessionStore);
 
-const mod_id = currentMod.value.mod_id;
+const mod_id = OpenModID.value.mod_id;
 
 watchEffect(() => {
-    Storage.set("current_mod", currentMod.value);
+    Storage.set("current_mod", OpenModID.value);
 });
 
 const ipcRenderer = useIpcRenderer();
@@ -37,9 +37,9 @@ const handle_postgres_changes = (payload) => {
             const updatedArticle = payload.new;
             const updatedID = updatedArticle.mod_id;
             if (updatedID === mod_id) {
-                const builds_preserve = currentMod.value["mod-builds"];
-                currentMod.value = updatedArticle;
-                currentMod.value["mod-builds"] = builds_preserve;
+                const builds_preserve = OpenModID.value["mod-builds"];
+                OpenModID.value = updatedArticle;
+                OpenModID.value["mod-builds"] = builds_preserve;
             }
         } else if (payload.eventType === "DELETE") {
             const deletedArticle = payload.old;
@@ -52,24 +52,24 @@ const handle_postgres_changes = (payload) => {
         switch (payload.eventType) {
             case "INSERT":
                 if (build.mod_id === mod_id) {
-                    currentMod.value["mod-builds"]?.push(build);
+                    OpenModID.value["mod-builds"]?.push(build);
                 }
                 break;
             case "UPDATE":
-                currentMod.value["mod-builds"].forEach(
+                OpenModID.value["mod-builds"].forEach(
                     (build_checking, index) => {
                         if (build_checking.build_id === build.build_id) {
-                            currentMod.value["mod-builds"][index] = build;
+                            OpenModID.value["mod-builds"][index] = build;
                         }
                     }
                 );
                 break;
             case "DELETE":
-                currentMod.value["mod-builds"].forEach(
+                OpenModID.value["mod-builds"].forEach(
                     (build_checking, index) => {
 						console.log(build_checking, build)
                         if (build_checking.build_id === build.build_id) {
-                            currentMod.value["mod-builds"].splice(index, 1);
+                            OpenModID.value["mod-builds"].splice(index, 1);
                         }
                     }
                 );
@@ -135,7 +135,7 @@ const updateMod = () => {
 	}
 }
 
-const builds = computed(() => currentMod.value["mod-builds"].sort((a, b) => b.build_id - a.build_id))
+const builds = computed(() => OpenModID.value["mod-builds"].sort((a, b) => b.build_id - a.build_id))
 
 watchEffect(async () => {
 	const versionAwait = await useIpcRendererInvoke("version-intalled", mod_id)
@@ -158,10 +158,11 @@ watchEffect(async () => {
 
 <template>
     <div id="details">
+	
         <div class="container">
-            <ContentSlideshow :content="currentMod.content_urls" />
+            <ContentSlideshow :content="OpenModID.content_urls" />
             <div class="info">
-                <p class="description">{{ currentMod.description }}</p>
+                <p class="description">{{ OpenModID.description }}</p>
                 <div class="mini-info">
                     <!-- <p class="rating">
                         <Icon
@@ -171,19 +172,19 @@ watchEffect(async () => {
                     </p> -->
                     <p class="platform">
                         <Icon icon="eos-icons:installing" />
-                        {{ Platforms[currentMod.platform] }}
+                        {{ Platforms[OpenModID.platform] }}
                     </p>
                     <p class="requirement">
                         <Icon icon="pajamas:issue-type-requirements" />
                         {{
-                            currentMod.standalone
+                            OpenModID.standalone
                                 ? "Не требует оригинальной игры"
                                 : "Требует оригинальную игру"
                         }}
                     </p>
                     <div class="socials">
                         <button
-                            v-for="link in currentMod.social_urls"
+                            v-for="link in OpenModID.social_urls"
                             :href="link"
                             target="_blank"
                             @click="openExternal(link)"
@@ -204,7 +205,7 @@ watchEffect(async () => {
                     <hr style="opacity: 0.1" />
                     <div v-html="converter.makeHtml(build.changes)" />
                     <hr style="opacity: 0.1" />
-					<TorrentDownload v-if="processedBuilds.value && (processedBuilds.value[build.build_id.toString()] !== undefined || enableDownload === build.build_id)" :done="processedBuilds.value[build.build_id.toString()]" :magnet="build.download_url" :mod="currentMod" :build="build"/>
+					<TorrentDownload v-if="processedBuilds.value && (processedBuilds.value[build.build_id.toString()] !== undefined || enableDownload === build.build_id)" :done="processedBuilds.value[build.build_id.toString()]" :magnet="build.download_url" :mod="OpenModID" :build="build"/>
                 </div>
             </div>
         </div>

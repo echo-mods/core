@@ -94,7 +94,7 @@ onMounted(async () => {
             }}/секунду)
         </p>
         <p v-else>
-			{{ done ? "Мод установлен" : "Мод устанавливается..." }}
+			{{ done ? "Версия установлена" : "Версия устанавливается..." }}
 			<template v-if="torrent.ready">
 				<br>
 				Мод раздаётся - {{ formatSizeUnits(torrent.uploadSpeed) }}/секунду

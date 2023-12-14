@@ -6,13 +6,14 @@ const Storage = initStorage()
 
 export const useSessionStore = defineStore('session', () => {
     const currentSection = ref(Storage.get("section") || "explore")
-    const currentMod = ref(Storage.get("current_mod"))
+    const OpenModID = ref(Storage.get("current_mod"))
     const installationPaths = ref(Storage.get("installation_paths"))
     const downloading = ref()
+    const titleFrag = ref()
 
     function savePath() {
         Storage.set("installation_paths", installationPaths)
     }
 
-    return { currentSection, currentMod, installationPaths, downloading, savePath }
+    return { currentSection, OpenModID, installationPaths, downloading, savePath, titleFrag }
 })
