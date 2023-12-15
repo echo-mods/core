@@ -2,11 +2,14 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { configDotenv } from "dotenv";
 import WebTorrent from "webtorrent"
 import { NsisUpdater } from "electron-updater"
-import path from "path";
+import { fileURLToPath } from 'url';
+import path, { dirname } from "path";
 import Store from "electron-store"
 import AdmZip from "adm-zip"
 import { exec } from 'node:child_process'
 configDotenv()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const { openExternal } = shell
 
 const Storage = new Store();
@@ -152,7 +155,7 @@ async function createWindow() {
 				parent: mainWindow,
 				modal: true,
 				webPreferences: {
-					preload: path.resolve('preload.auth.js'),
+					preload: path.join(__dirname, 'preload.auth.js'),
 				}
 			})
 			auth_win.loadURL('http://localhost:5173/auth/login?electron=true')
