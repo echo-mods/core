@@ -9,6 +9,10 @@
 	},
 	"repository": "https://github.com/echo-mods/core",
 	"description": "A mod manager made FOR the community!",
+	"files": [
+		"**/*",
+		 "!node_modules/${/*}"
+	],
 	"build": {
 		"productName": "EchoMods",
 		"appId": "com.github.echo-mods.core",
@@ -63,17 +67,13 @@
 		"dotenv": "^16.0.3",
 		"electron-store": "^8.1.0",
 		"electron-updater": "^6.1.7",
-		"magnet-uri": "^7.0.5",
-		"pinia": "^2.0.35",
 		"sass": "^1.63.5",
 		"showdown": "^2.1.0",
-		"universal-cookie": "^6.1.1",
-		"update-electron-app": "^3.0.0",
 		"vue": "^3.2.47",
-		"webtorrent": "^2.1.30",
-		"ws": "^8.13.0"
+		"webtorrent": "^2.1.30"
 	},
 	"devDependencies": {
+		"pinia": "^2.0.35",
 		"@electron-forge/cli": "^6.4.2",
 		"@electron-forge/maker-deb": "^6.4.2",
 		"@electron-forge/maker-rpm": "^6.4.2",
