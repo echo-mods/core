@@ -76,7 +76,7 @@ ipcRenderer.on("au-downloaded", (event, data) => {
 
 <template>
 	<title>EchoMods{{ titleFrag ? " - " : "" }}{{ titleFrag }}</title>
-    <Topbar version="0.2.6" build_label="dev build" />
+    <Topbar version="0.2.7" build_label="dev build" />
     <NoInternet v-if="!internet_present" />
     <main v-else>
         <Sidebar />
