@@ -1,12 +1,9 @@
 import { useIpcRenderer } from '@vueuse/electron'
 
-let ipcRenderer
+let ipcRenderer = useIpcRenderer()
 
 export const askGamePath = async (game) => {
-	if (!ipcRenderer) {
-		ipcRenderer = useIpcRenderer()
-	}
-	const pathToGame = await ipcRenderer.invoke('settings_pickInstallationPath', game)
+	const pathToGame = await ipcRenderer.invoke('pick-installation-path', game)
 	return new Promise((resolve) => {
 		let wait = setInterval(() => {
 			if (pathToGame.value !== null) {
@@ -18,8 +15,5 @@ export const askGamePath = async (game) => {
 }
 
 export const openExternal = async (link) => {
-	if (!ipcRenderer) {
-		ipcRenderer = useIpcRenderer()
-	}
 	await ipcRenderer.invoke('link', link)
 }
