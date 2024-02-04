@@ -1,40 +1,35 @@
 <script setup>
 // Composables
 import { useIpcRenderer } from "@vueuse/electron";
-import { initStorage } from './modules/storage'
 import { useSupabase } from "./composables/useSupabase";
 
 // Components
 import Topbar from "./components/Topbar.vue";
-import NoInternet from "./components/NoInternet.vue";
 import Sidebar from "./components/Sidebar.vue";
+import Backdrop from "./components/Backdrop.vue"
 
 // Views
-import ExploreModsView from "./views/ExploreMods.vue";
-import ExploreFilesView from "./views/ExploreFiles.vue";
-import LibraryView from "./views/Library.vue";
-import SettingsView from "./views/Settings.vue";
-import ModDetailsView from "./views/ModDetails.vue";
-import FileDetailsView from "./views/FileDetails.vue";
+import ExploreView from "./views/Explore.vue"
+import SettingsView from "./views/Settings.vue"
 
 // Vue imports
-import { onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 // Pinia stores
 import { useSessionStore } from "./stores/SessionStore.js";
+import { initStorage } from './modules/storage'
 
 // Other
 import { Icon } from "@iconify/vue";
-
-const Storage = initStorage()
 
 const supabase = useSupabase();
 
 const ipcRenderer = useIpcRenderer();
 const sessionStore = useSessionStore();
-
+const Storage = initStorage()
 const { currentSection, OpenModID, titleFrag } = storeToRefs(sessionStore);
+
 
 // Connection management
 const internet_present = ref(navigator.onLine);
@@ -44,8 +39,6 @@ const update = () => {
 window.addEventListener("offline", update);
 window.addEventListener("online", update);
 onMounted(update)
-
-watchEffect(() => Storage.set("section", currentSection.value))
 
 ipcRenderer.on("deeplink", async (event, params) => {
 	const { targetLink: link } = params
@@ -69,29 +62,25 @@ ipcRenderer.on("deeplink", async (event, params) => {
 })
 const updateData = ref()
 ipcRenderer.on("au-downloaded", (event, data) => {
-	console.log(event, data)
 	updateData.value = data
+})
+
+// Save section that the user switched to
+watch(sessionStore, () => {
+	Storage.set("section", currentSection.value)
 })
 </script>
 
 <template>
 	<title>EchoMods{{ titleFrag ? " - " : "" }}{{ titleFrag }}</title>
+	<Backdrop />
     <Topbar version="0.2.7" build_label="dev build" />
-    <NoInternet v-if="!internet_present" />
-    <main v-else>
+    <main>
         <Sidebar />
         <div id="content">
             <Transition name="view" mode="out-in">
-                <ExploreModsView v-if="sessionStore.currentSection === 'explore'" />
-                <ExploreFilesView v-if="sessionStore.currentSection === 'explore_files'" />
-                <ModDetailsView
-                    v-else-if="sessionStore.currentSection === 'details'"
-                />
-                <FileDetailsView
-                    v-else-if="sessionStore.currentSection === 'file_details'"
-                />
-                <LibraryView
-                    v-else-if="sessionStore.currentSection === 'library'"
+                <ExploreView
+                    v-if="sessionStore.currentSection === 'explore'"
                 />
                 <SettingsView
                     v-else-if="sessionStore.currentSection === 'settings'"

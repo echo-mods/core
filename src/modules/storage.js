@@ -1,5 +1,5 @@
 const StorageModule = require('electron-store'); 
-var Storage = null
+let Storage = null
 
 export const initStorage = () => {
     if (!Storage) {

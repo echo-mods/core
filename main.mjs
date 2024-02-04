@@ -1,12 +1,12 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { configDotenv } from "dotenv";
-import WebTorrent from "webtorrent"
 import { NsisUpdater } from "electron-updater"
 import { fileURLToPath } from 'url';
+import { exec } from 'node:child_process'
 import path, { dirname } from "path";
 import Store from "electron-store"
 import AdmZip from "adm-zip"
-import { exec } from 'node:child_process'
+import WebTorrent from "webtorrent"
 configDotenv()
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,12 +17,13 @@ Store.initRenderer()
 
 app.setAsDefaultProtocolClient('echomods')
 
-const gotTheLock = app.requestSingleInstanceLock()
-
 const Torrent = new WebTorrent();
 
 let mainWindow
-async function createWindow() {
+let currentlyInstalling
+let auth_windows = []
+
+const createWindow = async () => {
 	mainWindow = new BrowserWindow({
 		width: 800,
 		height: 600,
@@ -35,27 +36,14 @@ async function createWindow() {
 			contextIsolation: false,
 		},
 	});
-
-	const closeAuthWindows = (event) => {
-		auth_windows.forEach(win => {
-			try {
-				win.close()
-			} catch { }
-		})
-		auth_windows = []
-	}
-
-	const processedBuilds = async () => {
-		const retval = Storage.get("processed_builds")
-		return retval
-	}
-
-	let auth_windows = []
-
-	const setProgress = (value) => mainWindow.setProgressBar(value)
 	mainWindow.maximize();
 	mainWindow.loadFile("dist/index.html");
 
+
+	// Set progress function
+	const setProgress = (value) => mainWindow.setProgressBar(value)
+
+	// Open deeplink if present
 	if (process.argv.length > 1) {
 		mainWindow.on("ready-to-show", () => {
 			mainWindow.webContents.send("deeplink", {
@@ -64,45 +52,28 @@ async function createWindow() {
 		});
 	}
 
-	ipcMain.on("minimiseApp", () => {
-		mainWindow.minimize();
-	});
-	ipcMain.on("toggleApp", () => {
-		if (mainWindow.isMaximized()) {
-			mainWindow.restore();
-		} else {
-			mainWindow.maximize();
-		}
-	});
-	ipcMain.on("closeApp", () => {
-		mainWindow.close();
-	});
-	ipcMain.handle("set_progress", (event, value) => {
-		setProgress(value)
-	});
-	ipcMain.handle(
-		"install_build",
-		async (event, magnet, installationPath, torrentKeys, mod_id, build_id) => {
-			let torrent = {}
+	// Build installation function
+	const installBuild = async (magnet, installationPath, mod_id, build_id) => {
+		return new Promise((resolve, reject) => {
+			// Process state
 			let extracting = false
+
+			// Called during download
 			const onTorrent = (download) => {
-				const sendUpdate = () => {
-					torrentKeys.forEach((key) => (torrent[key] = download[key]));
-					mainWindow.send("torrent-progress", magnet, torrent)
-					if (!extracting) setProgress(download.progress < 1 ? download.progress : -1)
-				}
-				const interval = setInterval(sendUpdate, 500);
+				// When torrent downloaded
 				download.on("done", async () => {
-					sendUpdate()
+					// Warn user about unresponsive application
 					dialog.showMessageBox({
 						title: "Предупреждение",
 						message: "Пока мод устанавливается программа может не отвечать.",
 						type: "warning"
 					})
+					// Prepate archive for unpacking
 					const archivePath = path.resolve(installationPath, download.name)
 					const archive = new AdmZip(archivePath);
 					const entries = archive.getEntries()
 					const entryCount = entries.length
+					// Unpack
 					extracting = true
 					for (let i = 0; i < entryCount; i++) {
 						try {
@@ -114,36 +85,44 @@ async function createWindow() {
 						setProgress((i + 1) / entryCount)
 					}
 					extracting = false
-					Storage.set(`processed_builds.${build_id}`, true)
-					Storage.set(`installed_mods.${installationPath}`, {
-						mod_id,
-						build_id
-					})
-					mainWindow.send("torrent-progress", magnet, true)
+					currentlyInstalling = undefined
+					setProgress(-1)
+					resolve()
 				});
 			};
+			// Check if torrent is duplicate
 			const torrents = Torrent.torrents
 			for (let i = 0; i < torrents.length; i++) {
 				if (torrents[i].magnetURI === magnet) return
 			}
-			Storage.set(`processed_builds.${build_id}`, false)
+			// Start download
 			Torrent.add(magnet, { path: installationPath }, onTorrent)
-		}
-	)
-	ipcMain.handle("launch_build", async (event, build) => {
+			currentlyInstalling = {
+				mod_id,
+				build_id,
 
-		exec(path.join(build.exec_path))
-	})
-	ipcMain.handle("version-intalled", async (event, mod_id) => {
-		const installed = Storage.get(`installed_mods`)
-		const paths = Object.keys(installed)
-		for (let i = 0; i < paths.length; i++) {
-			const path = paths[i]
-			const installation = installed[path]
-			if (installation.mod_id === mod_id) return installation
-		}
-	})
-	ipcMain.handle("processed-builds", processedBuilds)
+			}
+		})
+	}
+	// // TEST
+	// console.log("Download start")
+	// await installBuild("magnet:?xt=urn:btih:c3c9f18c2e21bb8820600380b4c540d3a3b47047&dn=TK.zip&tr=http%3A%2F%2Flocalhost%3A8000%2Fannounce", "C:/Users/andre/GitHub/core/test", 69, 420)
+	// console.log("Done!")
+
+	// Auth windows
+	const closeAuthWindows = (event) => {
+		auth_windows.forEach(win => {
+			try {
+				win.close()
+			} catch { }
+		})
+		auth_windows = []
+	}
+
+	//////////////////
+	// IPC HANDLERS //
+	//////////////////
+
 	ipcMain.handle(
 		"start_auth",
 		async (event) => {
@@ -169,19 +148,40 @@ async function createWindow() {
 		mainWindow.webContents.send("authorize_client", cred)
 		closeAuthWindows()
 	})
-	ipcMain.handle("is_electron", (event, link) => {
-		return true
-	});
 	ipcMain.handle("close_auth_window", closeAuthWindows);
+
+	// Window controls
+	ipcMain.handle("minimise-app", () => {
+		mainWindow.minimize();
+	});
+	ipcMain.handle("toggle-app", () => {
+		if (mainWindow.isMaximized()) {
+			mainWindow.restore();
+		} else {
+			mainWindow.maximize();
+		}
+	});
+	ipcMain.handle("close-app", () => {
+		mainWindow.close();
+	});
+	ipcMain.handle("set-progress", (event, value) => {
+		setProgress(value)
+	});
+	ipcMain.handle(
+		"install-build",
+		installBuild
+	)
+	// URL handler
 	ipcMain.handle("link", (event, link) => {
 		openExternal(link);
 	});
-	ipcMain.handle("settings_pickInstallationPath", (event, game) => {
+
+	ipcMain.handle("pick-installation-path", (event, game) => {
 		let savePath = null;
 		const games = {
-			soc: "ТЧ",
-			cs: "ЧН",
-			cop: "ЗП",
+			soc: "Тенью Чернобыля",
+			cs: "Чистым Небом",
+			cop: "Зовом Припяти",
 		};
 		try {
 			savePath = dialog.showOpenDialogSync(mainWindow, {
@@ -196,6 +196,7 @@ async function createWindow() {
 }
 
 
+const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
 	app.quit()
 } else {
@@ -210,12 +211,14 @@ if (!gotTheLock) {
 		}
 	})
 	app.whenReady().then(() => {
+		// Create window
 		createWindow();
 		app.on("activate", () => {
 			if (BrowserWindow.getAllWindows().length === 0) {
 				createWindow();
 			}
 		});
+		// Auto updates logic
 		const autoUpdater = new NsisUpdater()
 		autoUpdater.on('download-progress', (progressObj) => {
 			const message = `Скачивание - ${progressObj.percent}%`

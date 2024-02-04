@@ -6,6 +6,7 @@ import { useSessionStore } from "../stores/SessionStore.js";
 import { useIpcRenderer } from "@vueuse/electron";
 import { useSupabase } from "../composables/useSupabase";
 import { useUsername } from "../composables/useUsername";
+import { Icon } from "@iconify/vue"
 
 const supabase = useSupabase();
 
@@ -68,6 +69,7 @@ const logout = async () => {
 <template>
     <div id="settings">
         <h2 class="heading">Аккаунт</h2>
+        <Icon style="height: 2rem; aspect-ratio: 1; margin: 0 1.5rem;" v-if="user === undefined" icon="svg-spinners:ring-resize" />
         <button @click="startAuth" v-if="user === null">Войти</button>
         <div class="user" v-else-if="user">
             <img class="pfp" v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" />
@@ -78,7 +80,7 @@ const logout = async () => {
             </div>
 			<button style="margin-left: auto;" @click="logout">Выйти</button>
         </div>
-        <hr style="opacity: 0.2" />
+        <hr />
         <h2 class="heading">Пути установки</h2>
         <div class="game-paths" v-if="!refreshing">
             <h4>Тень чернобыля</h4>
@@ -101,9 +103,7 @@ const logout = async () => {
 #settings {
     margin: 1.5rem;
     padding: 1rem;
-    background-color: rgba(255, 255, 255, 0.01);
     height: calc(100% - 5rem);
-    outline: 1px rgba(255, 255, 255, 0.4) solid;
     border-radius: 1rem;
     backdrop-filter: blur(1px);
     overflow: auto;
@@ -144,12 +144,10 @@ button {
     border: none;
     cursor: pointer;
     border-radius: 0.5rem;
-    box-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.3);
     padding: 0.6rem 1rem;
     transition: all 0.3s ease-in-out;
 }
 button:hover {
-    box-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.5);
     background-color: rgba(255, 255, 255, 0.2);
 }
 </style>
